@@ -18,6 +18,10 @@ const normalizeString = (str) => {
     console.log('Attempting to normalize an undefined or null value.');
     return '';
   }
+  if (typeof str !== 'string') {
+    console.log('Attempting to normalize a non-string value:', str);
+    return '';
+  }
   return str.trim();
 };
 
@@ -65,6 +69,9 @@ async function checkDatabase(left3, left4, clientCode, dateFilter) {
       };
     }
     return { exists: false, dateStatus: 'Fresh Lead GTG' }; // No record matched
+  } catch (error) {
+    console.error('Database query error:', error);
+    return { exists: false, dateStatus: 'Error' };
   } finally {
     client.release();
   }
@@ -79,7 +86,7 @@ async function processFile(filePath, clientCode, dateFilter) {
   let companyIndex, firstNameIndex, lastNameIndex, emailIndex, phoneIndex;
   const headerRow = worksheet.getRow(1);
   headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-    switch(cell.value) {
+    switch (cell.value) {
       case 'Company Name':
         companyIndex = colNumber;
         break;
