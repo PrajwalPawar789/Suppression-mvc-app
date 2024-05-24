@@ -7,7 +7,7 @@ const pool = new Pool({
     database: 'supppression-db',
     password: 'root',
     port: 5432
-});
+  });
 
 async function insertSuppressionData(req, res) {
     const { left3, left4, clientCode, date } = req.body;

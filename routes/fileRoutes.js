@@ -1,18 +1,41 @@
+// routes/fileRoutes.js
 const express = require('express');
 const router = express.Router();
 const fileController = require('../controllers/fileController');
 const suppressionDataController = require('../controllers/suppressionDataController');
+const checkemailController = require('../controllers/checkemailController');
+const loginController = require('../controllers/loginController'); // Add this line
 
-router.get('/', (req, res) => {
+// Middleware to check if user is authenticated
+const isAuthenticated = (req, res, next) => {
+  if (req.session.isAuthenticated) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+};
+
+router.get('/', isAuthenticated, (req, res) => {
   res.render('upload');
 });
 
-router.get('/insert', (req, res) => {
-  res.render('insertsuppressiondata'); // Render the page to upload and check suppression data
+router.get('/insert', isAuthenticated, (req, res) => {
+  res.render('insertsuppressiondata');
 });
 
-router.post('/insert', suppressionDataController.insertSuppressionData); // Inserts data into DB
-router.post('/upload', fileController.upload.single('excelFile'), fileController.uploadFile); // Regular file upload
-router.post('/process', fileController.upload.single('excelFile'), suppressionDataController.processExcel); // Process uploaded Excel file for checking suppression data
+router.get('/checkemail', isAuthenticated, (req, res) => {
+  res.render('checkemail');
+});
+
+router.get('/login', (req, res) => {
+  res.render('login');
+});
+
+router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
+router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);
+router.post('/process', isAuthenticated, fileController.upload.single('excelFile'), suppressionDataController.processExcel);
+
+router.post('/checkemail', isAuthenticated, checkemailController.checkEmail);
+router.post('/login', loginController.login); // Define the new route for login
 
 module.exports = router;

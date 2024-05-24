@@ -11,7 +11,6 @@ const pool = new Pool({
   password: 'root',
   port: 5432
 });
-
 // Helper function to normalize strings
 const normalizeString = (str) => {
   if (str === undefined || str === null) {

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Email</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Check Email</h2>
+        <form action="/checkemail" method="post">
+            <div class="form-group">
+                <label for="clientCode">Client Code</label>
+                <select class="form-control" id="clientCode" name="clientCode" required>
+                    <option value="TE16">TE16</option>
+                    <option value="DI31">DI31</option>
+                    <option value="HN36">HN36</option>
+                    <option value="AD62">AD62</option>
+                    <option value="AN12">AN12</option>
+                    <option value="DY78">DY78</option>
+                    <option value="MA99">MA99</option>
+                    <option value="NT26">NT26</option>
+                    <option value="UE88">UE88</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Check</button>
+        </form>
+    </div>
+</body>
+</html>
