@@ -25,4 +25,13 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login };
+const logout = (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Failed to logout' });
+      }
+      res.redirect('/login');
+    });
+};
+
+module.exports = { login, logout };

@@ -5,18 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload and Check Suppression Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 18px;
+        }
+
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            background-color: transparent;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        select {
+            background-color: #333;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ::-webkit-file-upload-button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        ::-webkit-file-upload-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Update and Insert New Suppression Data</h2>
+    <%- include('navbar') %>
+    <div class="container">
+        <h2>Insert New Suppression Records / Update </h2>
         <form action="/process" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="excelFile">Excel File</label>
-                <input type="file" class="form-control-file" id="excelFile" name="excelFile" required>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="excelFile" name="excelFile" required>
+                    <label class="custom-file-label" for="excelFile">Choose file</label>
+                </div>
             </div>
             <div class="form-group">
                 <label for="dateCheck">Select Date Check</label>
-                <select class="form-control" id="dateCheck" name="dateCheck" required>
+                <select class="custom-select" id="dateCheck" name="dateCheck" required>
+                    <option value="">Choose date check</option>
                     <option value="6months">6 Months</option>
                     <option value="1year">1 Year</option>
                 </select>

@@ -1,0 +1,42 @@
+<!-- views/navbar.ejs -->
+<nav class="navbar">
+    <a href="/" class="navbar-brand">Suppression</a>
+    <form action="/logout" method="GET">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+    <style>
+        .navbar {
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</nav>

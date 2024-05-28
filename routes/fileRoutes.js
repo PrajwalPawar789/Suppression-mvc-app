@@ -31,6 +31,16 @@ router.get('/login', (req, res) => {
   res.render('login');
 });
 
+router.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Failed to logout' });
+      }
+      res.redirect('/login');
+    });
+  });
+  
+
 router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
 router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);
 router.post('/process', isAuthenticated, fileController.upload.single('excelFile'), suppressionDataController.processExcel);
