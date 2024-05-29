@@ -79,20 +79,18 @@ async function checkDatabase(left3, left4, clientCode, dateFilter) {
 
 // Read the Excel file, calculate left_3 and left_4, check the database, and add status
 async function processFile(filePath, clientCode, dateFilter) {
-  // Check if the file is an Excel file
-  if (!filePath.endsWith('.xlsx')) {
-    return { error: 'Uploaded file is not an Excel file.' };
-  }
-
   const workbook = new ExcelJS.Workbook();
-  try {
-    await workbook.xlsx.readFile(filePath);
-  } catch (error) {
-    return { error: 'Error reading the Excel file.' };
-  }
-  
+  await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
 
+  // Check if all required column names are present
+  const requiredColumns = ['Company Name', 'First Name', 'Last Name', 'Email ID', 'Phone Number'];
+  const missingColumns = requiredColumns.filter(colName => !worksheet.getRow(1).values.includes(colName));
+  if (missingColumns.length > 0) {
+    return { error: `Missing columns: ${missingColumns.join(', ')}` };
+  }
+
+  // Proceed with processing the file
   let companyIndex, firstNameIndex, lastNameIndex, emailIndex, phoneIndex;
   const headerRow = worksheet.getRow(1);
   headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
@@ -153,6 +151,12 @@ module.exports = {
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
+
+    // Check if the uploaded file is an Excel file
+    if (!req.file.originalname.endsWith('.xlsx')) {
+      return res.status(400).send('Uploaded file is not an Excel file.');
+    }
+
     const clientCode = req.body.clientCode;
     const dateFilter = parseInt(req.body.dateFilter);
     try {
