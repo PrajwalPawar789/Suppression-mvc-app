@@ -79,8 +79,18 @@ async function checkDatabase(left3, left4, clientCode, dateFilter) {
 
 // Read the Excel file, calculate left_3 and left_4, check the database, and add status
 async function processFile(filePath, clientCode, dateFilter) {
+  // Check if the file is an Excel file
+  if (!filePath.endsWith('.xlsx')) {
+    return { error: 'Uploaded file is not an Excel file.' };
+  }
+
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(filePath);
+  try {
+    await workbook.xlsx.readFile(filePath);
+  } catch (error) {
+    return { error: 'Error reading the Excel file.' };
+  }
+  
   const worksheet = workbook.getWorksheet(1);
 
   let companyIndex, firstNameIndex, lastNameIndex, emailIndex, phoneIndex;
@@ -146,10 +156,13 @@ module.exports = {
     const clientCode = req.body.clientCode;
     const dateFilter = parseInt(req.body.dateFilter);
     try {
-      const newFilePath = await processFile(req.file.path, clientCode, dateFilter);
-      res.download(newFilePath, (err) => {
+      const result = await processFile(req.file.path, clientCode, dateFilter);
+      if (result.error) {
+        return res.status(400).send(result.error);
+      }
+      res.download(result, (err) => {
         if (err) throw err;
-        fs.unlinkSync(newFilePath);
+        fs.unlinkSync(result);
         fs.unlinkSync(req.file.path);
       });
     } catch (error) {

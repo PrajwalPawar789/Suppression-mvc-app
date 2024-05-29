@@ -39,7 +39,6 @@ router.get('/logout', (req, res) => {
       res.redirect('/login');
     });
   });
-  
 
 router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
 router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);

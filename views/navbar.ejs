@@ -1,6 +1,11 @@
 <!-- views/navbar.ejs -->
 <nav class="navbar">
     <a href="/" class="navbar-brand">Suppression</a>
+    <div class="navbar-buttons">
+        
+        <a href="/insert" class="nav-link">Insert Data</a>
+        <a href="/checkemail" class="nav-link">Check Email</a>
+    </div>
     <form action="/logout" method="GET">
         <button type="submit" class="logout-btn">Logout</button>
     </form>
@@ -22,6 +27,24 @@
             font-size: 24px;
             text-decoration: none;
             color: #fff;
+        }
+
+        .navbar-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .nav-link {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
         }
 
         .logout-btn {

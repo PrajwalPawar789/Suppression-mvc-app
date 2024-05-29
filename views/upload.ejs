@@ -80,7 +80,9 @@
     </style>
 </head>
 <body>
+    <!-- Navbar included -->
     <%- include('navbar') %>
+
     <div class="container">
         <h2>Upload Excel File and Check Suppression</h2>
         <form action="/upload" method="post" enctype="multipart/form-data">
@@ -117,5 +119,20 @@
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     </div>
+
+    <script>
+        // Get the file input element and its label
+        const fileInput = document.getElementById('excelFile');
+        const fileLabel = document.querySelector('.custom-file-label');
+
+        // Update the label text when a file is selected
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+            } else {
+                fileLabel.textContent = 'Choose file';
+            }
+        });
+    </script>
 </body>
 </html>
