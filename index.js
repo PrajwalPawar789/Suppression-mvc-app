@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session'); // Add this line
 const fileRoutes = require('./routes/fileRoutes');
+const path = require('path');
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', fileRoutes);
 
