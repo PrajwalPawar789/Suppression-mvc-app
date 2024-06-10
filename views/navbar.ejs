@@ -1,65 +1,88 @@
 <!-- views/navbar.ejs -->
 <nav class="navbar">
-    <a href="/" class="navbar-brand">Suppression</a>
-    <div class="navbar-buttons">
-        
+    <div class="navbar-left">
+        <a href="/">
+            <img src="https://manlitics.ae/wp-content/uploads/2021/01/MANLITICS-LOGOn.png" alt="Manlitics Logo" class="navbar-logo">
+        </a>
+    </div>
+    <div class="navbar-center">
+        <a href="/" class="nav-link">Master Suppression</a>
         <a href="/insert" class="nav-link">Insert Data</a>
         <a href="/checkemail" class="nav-link">Check Email</a>
     </div>
-    <form action="/logout" method="GET">
-        <button type="submit" class="logout-btn">Logout</button>
-    </form>
-    <style>
-        .navbar {
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .navbar-brand {
-            font-size: 24px;
-            text-decoration: none;
-            color: #fff;
-        }
-
-        .navbar-buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-grow: 1;
-        }
-
-        .nav-link {
-            margin-left: 20px;
-            text-decoration: none;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .nav-link:hover {
-            text-decoration: underline;
-        }
-
-        .logout-btn {
-            padding: 8px 16px;
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-        }
-
-        .logout-btn:hover {
-            background-color: #c82333;
-        }
-    </style>
+    <div class="navbar-right">
+        <form action="/logout" method="GET">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
 </nav>
+
+<style>
+    .navbar {
+        background-color: #111;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+
+    .navbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-logo {
+        height: 40px;
+        margin-right: 20px;
+    }
+
+    .navbar-center {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        justify-content: center;
+    }
+
+    .navbar-brand {
+        font-size: 24px;
+        text-decoration: none;
+        color: #fff;
+        margin-right: 20px;
+    }
+
+    .nav-link {
+        margin-left: 20px;
+        text-decoration: none;
+        color: #fff;
+        font-size: 16px;
+    }
+
+    .nav-link:hover {
+        text-decoration: underline;
+    }
+
+    .navbar-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .logout-btn {
+        padding: 8px 16px;
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .logout-btn:hover {
+        background-color: #c82333;
+    }
+</style>
