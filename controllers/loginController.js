@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  database: 'suppression-db',
+  database: 'supppression-db',
   password: 'root',
   port: 5432
 });

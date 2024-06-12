@@ -4,7 +4,7 @@ const readXlsxFile = require('read-excel-file/node');
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'suppression-db',
+    database: 'supppression-db',
     password: 'root',
     port: 5432
   });

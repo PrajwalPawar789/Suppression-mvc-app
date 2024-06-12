@@ -7,7 +7,7 @@ const ExcelJS = require("exceljs");
 const pool = new Pool({
   user: "postgres",
   host: "localhost",
-  database: "suppression-db",
+  database: "supppression-db",
   password: "root",
   port: 5432,
 });
@@ -35,60 +35,110 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Function to check the database for a match based on left_3, left_4, and email
-async function checkDatabase(left3, left4, email, clientCode, dateFilter) {
+async function checkDatabase(
+  left3,
+  left4,
+  email,
+  clientCode,
+  dateFilter,
+  linkedinLink
+) {
   const client = await pool.connect();
   try {
     const query = `
-      SELECT date_, EXISTS (
-        SELECT 1
-        FROM campaigns
-        WHERE 
-          left_3 = $1 AND
-          left_4 = $2 AND
-          email = $3 AND
-          client = $4
-      ) AS match_found
-      FROM campaigns
-      WHERE 
-          left_3 = $1 AND
-          left_4 = $2 AND
-          email = $3 AND
-          client = $4
-      LIMIT 1;`;
-    const result = await client.query(query, [left3, left4, email, clientCode]);
+      WITH data AS (
+        SELECT $1 AS linkedin_link,
+               $2 AS client_code,
+               $3 AS left_3,
+               $4 AS left_4,
+               $5 AS email_id
+      ),
+      filtered_campaigns AS (
+        SELECT
+          CASE
+            WHEN (current_date - to_date(c.date_, 'DD-Mon-YY'))::int > $6 THEN 'Suppression Cleared'
+            ELSE 'Still Suppressed'
+          END AS date_status,
+          CASE
+            WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+            ELSE 'Unmatch'
+          END AS match_status,
+          CASE
+            WHEN c.email = d.email_id THEN 'Match'
+            ELSE 'Unmatch'
+          END AS email_status,
+          CASE
+            WHEN c.client = d.client_code THEN 'Match (' || c.client || ')'
+            ELSE 'Unmatch'
+          END AS client_code_status,
+          CASE
+            WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+            ELSE 'Unmatch'
+          END AS linkedin_link_status
+        FROM
+          public.campaigns c
+        JOIN
+          data d ON c.client = d.client_code
+        WHERE
+          c.linkedin_link = d.linkedin_link
+      ),
+      final_result AS (
+        SELECT * FROM filtered_campaigns
+        WHERE date_status = 'Still Suppressed'
+        UNION ALL
+        SELECT * FROM filtered_campaigns
+        WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
+          SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
+        )
+      )
+      SELECT 
+        COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
+        COALESCE(match_status, 'Unmatch') AS match_status,
+        COALESCE(email_status, 'Unmatch') AS email_status,
+        COALESCE(client_code_status, 'Unmatch') AS client_code_status,
+        COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status
+      FROM (
+        SELECT * FROM final_result
+        UNION ALL
+        SELECT 'Fresh Lead GTG' AS date_status, 'Unmatch' AS match_status, 'Unmatch' AS email_status, 'Unmatch' AS client_code_status, 'Unmatch' AS linkedin_link_status
+        WHERE NOT EXISTS (SELECT 1 FROM final_result)
+      ) AS subquery
+      LIMIT 1;
+    `;
+    const result = await client.query(query, [
+      linkedinLink,
+      clientCode,
+      left3,
+      left4,
+      email,
+      dateFilter * 30,
+    ]);
     const row = result.rows[0];
     if (row) {
-      const dateFromDb = new Date(row.date_);
-      if (isNaN(dateFromDb.getTime())) {
-        return {
-          exists: false,
-          dateStatus: "Invalid Date Format",
-          emailStatus: "Unmatch",
-        };
-      }
-
-      const currentDate = new Date();
-      const monthsAgoDate = new Date();
-      monthsAgoDate.setMonth(currentDate.getMonth() - dateFilter);
-
       return {
-        exists: row.match_found,
-        dateStatus:
-          dateFromDb < monthsAgoDate
-            ? "Suppression Cleared"
-            : "Still Suppressed",
-        date: dateFromDb,
-        emailStatus: row.match_found ? "Match" : "Unmatch",
+        dateStatus: row.date_status,
+        matchStatus: row.match_status,
+        emailStatus: row.email_status,
+        clientCodeStatus: row.client_code_status,
+        linkedinLinkStatus: row.linkedin_link_status,
       };
     }
     return {
-      exists: false,
       dateStatus: "Fresh Lead GTG",
+      matchStatus: "Unmatch",
       emailStatus: "Unmatch",
+      clientCodeStatus: "Unmatch",
+      linkedinLinkStatus: "Unmatch",
     };
   } catch (error) {
     console.error("Database query error:", error);
-    return { exists: false, dateStatus: "Error", emailStatus: "Error" };
+    return {
+      dateStatus: "Error",
+      matchStatus: "Error",
+      emailStatus: "Error",
+      clientCodeStatus: "Error",
+      linkedinLinkStatus: "Error",
+    };
   } finally {
     client.release();
   }
@@ -106,6 +156,7 @@ async function processFile(filePath, clientCode, dateFilter) {
     "Last Name",
     "Email ID",
     "Phone Number",
+    "linkedinLink", // Added linkedinLink as a required column
   ];
   const missingColumns = requiredColumns.filter(
     (colName) => !worksheet.getRow(1).values.includes(colName)
@@ -115,7 +166,12 @@ async function processFile(filePath, clientCode, dateFilter) {
   }
 
   // Proceed with processing the file
-  let companyIndex, firstNameIndex, lastNameIndex, emailIndex, phoneIndex;
+  let companyIndex,
+    firstNameIndex,
+    lastNameIndex,
+    emailIndex,
+    phoneIndex,
+    linkedinLinkIndex;
   const headerRow = worksheet.getRow(1);
   headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
     switch (cell.value) {
@@ -134,6 +190,9 @@ async function processFile(filePath, clientCode, dateFilter) {
       case "Phone Number":
         phoneIndex = colNumber;
         break;
+      case "linkedinLink":
+        linkedinLinkIndex = colNumber;
+        break;
     }
   });
 
@@ -149,12 +208,18 @@ async function processFile(filePath, clientCode, dateFilter) {
   const emailStatusColumn = worksheet.getColumn(worksheet.columnCount + 4);
   emailStatusColumn.header = "Email Status";
 
+  const linkedinLinkStatusColumn = worksheet.getColumn(
+    worksheet.columnCount + 5
+  );
+  linkedinLinkStatusColumn.header = "LinkedIn Link Status";
+
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
     const firstName = normalizeString(row.getCell(firstNameIndex).value);
     const lastName = normalizeString(row.getCell(lastNameIndex).value);
     const companyName = normalizeString(row.getCell(companyIndex).value);
     const email = normalizeString(row.getCell(emailIndex).value);
+    const linkedinLink = normalizeString(row.getCell(linkedinLinkIndex).value); // Fetch linkedinLink
 
     const left3 = `${firstName.substring(0, 3)}${lastName.substring(
       0,
@@ -170,17 +235,17 @@ async function processFile(filePath, clientCode, dateFilter) {
       left4,
       email,
       clientCode,
-      dateFilter
+      dateFilter,
+      linkedinLink // Pass linkedinLink to checkDatabase
     );
 
-    row.getCell(statusColumn.number).value = dbResult.exists
-      ? "Match"
-      : "Unmatch";
-    row.getCell(clientCodeStatusColumn.number).value = dbResult.exists
-      ? "Match"
-      : "Unmatch";
+    row.getCell(statusColumn.number).value = dbResult.matchStatus;
+    row.getCell(clientCodeStatusColumn.number).value =
+      dbResult.clientCodeStatus;
     row.getCell(dateStatusColumn.number).value = dbResult.dateStatus;
     row.getCell(emailStatusColumn.number).value = dbResult.emailStatus;
+    row.getCell(linkedinLinkStatusColumn.number).value =
+      dbResult.linkedinLinkStatus;
 
     row.commit();
   }
@@ -203,6 +268,7 @@ async function processFileDynamicQuery(filePath, left3, left4, dateFilter) {
     "Last Name",
     "Email ID",
     "Phone Number",
+    "linkedinLink", // Added linkedinLink as a required column
   ];
   const missingColumns = requiredColumns.filter(
     (colName) => !worksheet.getRow(1).values.includes(colName)
@@ -212,7 +278,12 @@ async function processFileDynamicQuery(filePath, left3, left4, dateFilter) {
   }
 
   // Proceed with processing the file
-  let companyIndex, firstNameIndex, lastNameIndex, emailIndex, phoneIndex;
+  let companyIndex,
+    firstNameIndex,
+    lastNameIndex,
+    emailIndex,
+    phoneIndex,
+    linkedinLinkIndex;
   const headerRow = worksheet.getRow(1);
   headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
     switch (cell.value) {
@@ -231,20 +302,28 @@ async function processFileDynamicQuery(filePath, left3, left4, dateFilter) {
       case "Phone Number":
         phoneIndex = colNumber;
         break;
+      case "linkedinLink":
+        linkedinLinkIndex = colNumber;
+        break;
     }
   });
 
-  const statusColumn = worksheet.getColumn(worksheet.columnCount + 1);
-  statusColumn.header = "Match Status";
-
-  const clientCodeStatusColumn = worksheet.getColumn(worksheet.columnCount + 2);
-  clientCodeStatusColumn.header = "Client Code Status";
-
-  const dateStatusColumn = worksheet.getColumn(worksheet.columnCount + 3);
+  const dateStatusColumn = worksheet.getColumn(worksheet.columnCount + 1);
   dateStatusColumn.header = "Date Status";
 
-  const emailStatusColumn = worksheet.getColumn(worksheet.columnCount + 4);
+  const emailStatusColumn = worksheet.getColumn(worksheet.columnCount + 2);
   emailStatusColumn.header = "Email Status";
+
+  const clientCodeStatusColumn = worksheet.getColumn(worksheet.columnCount + 3);
+  clientCodeStatusColumn.header = "Client Code Status";
+
+  const matchStatusColumn = worksheet.getColumn(worksheet.columnCount + 4);
+  matchStatusColumn.header = "Match Status";
+
+  const linkedinLinkStatusColumn = worksheet.getColumn(
+    worksheet.columnCount + 5
+  );
+  linkedinLinkStatusColumn.header = "LinkedIn Link Status";
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
@@ -252,6 +331,7 @@ async function processFileDynamicQuery(filePath, left3, left4, dateFilter) {
     const lastName = normalizeString(row.getCell(lastNameIndex).value);
     const companyName = normalizeString(row.getCell(companyIndex).value);
     const email = normalizeString(row.getCell(emailIndex).value);
+    const linkedinLink = normalizeString(row.getCell(linkedinLinkIndex).value); // Fetch linkedinLink
 
     const calculatedLeft3 = `${firstName.substring(0, 3)}${lastName.substring(
       0,
@@ -264,58 +344,82 @@ async function processFileDynamicQuery(filePath, left3, left4, dateFilter) {
 
     // Use dynamic query with parameters
     const dynamicQuery = `
-WITH client_codes AS (
-    SELECT unnest(ARRAY['TE16', 'DI31', 'HN36', 'AD62', 'AN12', 'DY78', 'MA99', 'NT26', 'UE88']) AS client_code
-),
-matches AS (
-    SELECT
-        cc.client_code,
-        EXISTS (
-            SELECT 1
-            FROM campaigns
-            WHERE
-                left_3 = '${calculatedLeft3.replace("'", "''")}' AND
-                left_4 = '${calculatedLeft4.replace("'", "''")}' AND
-                email = '${email.replace("'", "''")}' AND
-                client = cc.client_code
-        ) AS match_found,
-        (
-            SELECT date_::TIMESTAMP
-            FROM campaigns
-            WHERE
-                left_3 = '${calculatedLeft3.replace("'", "''")}' AND
-                left_4 = '${calculatedLeft4.replace("'", "''")}' AND
-                email = '${email.replace("'", "''")}' AND
-                client = cc.client_code
-            LIMIT 1
-        ) AS date_
-    FROM
-        client_codes cc
-)
-SELECT
-    CASE
-        WHEN bool_or(m.match_found) THEN
-            CASE
-                WHEN bool_or(m.date_ >= CURRENT_DATE - INTERVAL '${dateFilter} months') THEN 'Still Suppressed'
-                ELSE 'Suppression Cleared'
-            END
-        ELSE 'Fresh Lead GTG'
-    END AS status,
-    CASE
-        WHEN bool_or(m.match_found) THEN 'Match'
-        ELSE 'Unmatch'
-    END AS email_status
-FROM
-    matches m;
-`;
+      WITH data AS (
+          SELECT $1 AS left_3,
+                 $2 AS left_4,
+                 $3 AS email_id,
+                 $4 AS linkedin_link,
+                 ARRAY['TE16', 'DI31', 'AD62', 'AN12', 'DY78', 'MA99', 'NT26', 'UE88'] AS client_codes
+      ),
+      filtered_campaigns AS (
+          SELECT
+              CASE
+                  WHEN (current_date - to_date(c.date_, 'DD-Mon-YY'))::int > $5 THEN 'Suppression Cleared'
+                  ELSE 'Still Suppressed'
+              END AS date_status,
+              CASE
+                  WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                  ELSE 'Unmatch'
+              END AS match_status,
+              CASE
+                  WHEN c.email = d.email_id THEN 'Match'
+                  ELSE 'Unmatch'
+              END AS email_status,
+              CASE
+                  WHEN c.client = ANY(d.client_codes) THEN 'Match (' || c.client || ')'
+                  ELSE 'Unmatch'
+              END AS client_code_status,
+              CASE
+                  WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+                  ELSE 'Unmatch'
+              END AS linkedin_link_status
+          FROM
+              public.campaigns c
+          JOIN
+              data d ON c.linkedin_link = d.linkedin_link AND c.client = ANY(d.client_codes)
+          WHERE
+              c.linkedin_link = d.linkedin_link
+      ),
+      final_result AS (
+          SELECT * FROM filtered_campaigns
+          WHERE date_status = 'Still Suppressed'
+          UNION ALL
+          SELECT * FROM filtered_campaigns
+          WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
+              SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
+          )
+      )
+      SELECT 
+          COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
+          COALESCE(match_status, 'Unmatch') AS match_status,
+          COALESCE(email_status, 'Unmatch') AS email_status,
+          COALESCE(client_code_status, 'Unmatch') AS client_code_status,
+          COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status
+      FROM (
+          SELECT * FROM final_result
+          UNION ALL
+          SELECT 'Fresh Lead GTG' AS date_status, 'Unmatch' AS match_status, 'Unmatch' AS email_status, 'Unmatch' AS client_code_status, 'Unmatch' AS linkedin_link_status
+          WHERE NOT EXISTS (SELECT 1 FROM final_result)
+      ) AS subquery
+      LIMIT 1;
+    `;
 
-    // Execute the dynamic query
-    const dbResult = await pool.query(dynamicQuery);
+    // Execute the dynamic query with parameterized values
+    const dbResult = await pool.query(dynamicQuery, [
+      calculatedLeft3,
+      calculatedLeft4,
+      email,
+      linkedinLink,
+      dateFilter * 30,
+    ]);
 
-    row.getCell(statusColumn.number).value = dbResult.rows[0].status;
-    row.getCell(clientCodeStatusColumn.number).value = dbResult.rows[0].status;
-    row.getCell(dateStatusColumn.number).value = dbResult.rows[0].status;
+    row.getCell(dateStatusColumn.number).value = dbResult.rows[0].date_status;
     row.getCell(emailStatusColumn.number).value = dbResult.rows[0].email_status;
+    row.getCell(clientCodeStatusColumn.number).value =
+      dbResult.rows[0].client_code_status;
+    row.getCell(matchStatusColumn.number).value = dbResult.rows[0].match_status;
+    row.getCell(linkedinLinkStatusColumn.number).value =
+      dbResult.rows[0].linkedin_link_status;
 
     row.commit();
   }
@@ -324,6 +428,7 @@ FROM
   await workbook.xlsx.writeFile(newFilePath);
   return newFilePath;
 }
+
 
 module.exports = {
   upload,
