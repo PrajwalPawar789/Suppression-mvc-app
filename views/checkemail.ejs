@@ -34,6 +34,7 @@
         }
 
         input[type="email"],
+        input[type="text"],
         select {
             width: 100%;
             padding: 10px;
@@ -65,13 +66,24 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <%- include('navbar') %>
     <div class="container">
         <h2>Check Email</h2>
-        <form action="/checkemail" method="post">
+        <form id="emailForm" action="/checkemail" method="post">
             <div class="form-group">
                 <label for="clientCode">Client Code</label>
                 <select class="custom-select" id="clientCode" name="clientCode" required>
@@ -88,12 +100,42 @@
                 </select>
             </div>
             <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" id="firstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control" id="lastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="companyName">Company Name</label>
+                <input type="text" class="form-control" id="companyName" name="companyName" required>
+            </div>
+            <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
+                <div id="emailError" class="error-message hidden">Please enter a valid email address.</div>
+            </div>
+            <div class="form-group">
+                <label for="linkedin">LinkedIn Link</label>
+                <input type="text" class="form-control" id="linkedin" name="linkedin" required>
             </div>
             
             <button type="submit" class="btn btn-primary">Check</button>
         </form>
     </div>
+
+    <script>
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+
+        emailInput.addEventListener('input', function () {
+            if (!this.validity.valid) {
+                emailError.classList.remove('hidden');
+            } else {
+                emailError.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
