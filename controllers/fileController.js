@@ -257,6 +257,7 @@ async function processFile(filePath, clientCode, dateFilter) {
 
 // Read the Excel file, calculate left_3 and left_4, check the database, and add status
 async function processFileDynamicQuery(filePath, dateFilter) {
+  console.log(dateFilter, 'dateFilter is ')
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
@@ -342,6 +343,13 @@ async function processFileDynamicQuery(filePath, dateFilter) {
       4
     )}${companyName.substring(0, 4)}`;
 
+    // Validate and convert dateFilter to an integer
+    const dateFilterValue = parseInt(dateFilter, 10);
+    if (isNaN(dateFilterValue)) {
+      return { error: "Invalid dateFilter value" };
+    }
+    const daysToFilter = dateFilterValue * 30;
+
     // Use dynamic query with parameters
     const dynamicQuery = `
       WITH data AS (
@@ -410,7 +418,7 @@ async function processFileDynamicQuery(filePath, dateFilter) {
       calculatedLeft4,
       email,
       linkedinLink,
-      dateFilter * 30,
+      daysToFilter,
     ]);
 
     row.getCell(dateStatusColumn.number).value = dbResult.rows[0].date_status;
@@ -428,6 +436,7 @@ async function processFileDynamicQuery(filePath, dateFilter) {
   await workbook.xlsx.writeFile(newFilePath);
   return newFilePath;
 }
+
 
 async function processFileDynamicQueryMSFT(filePath, dateFilter) {
   const workbook = new ExcelJS.Workbook();
@@ -605,8 +614,6 @@ async function processFileDynamicQueryMSFT(filePath, dateFilter) {
   return newFilePath;
 }
 
-
-
 module.exports = {
   upload,
   processFile,
@@ -630,8 +637,6 @@ module.exports = {
         // Execute the dynamic query
         const result = await processFileDynamicQuery(
           req.file.path,
-          "left_3",
-          "left_4",
           dateFilter
         );
         if (result.error) {

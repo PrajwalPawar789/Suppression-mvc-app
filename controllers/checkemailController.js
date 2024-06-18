@@ -88,6 +88,7 @@ async function checkDatabase(firstName, lastName, email, clientCode, companyName
 }
 
 async function checkEmail(req, res) {
+    console.log('Username from checkemail controller', req.session.username);
     const { email, clientCode, firstName, lastName, companyName, linkedin } = req.body;
     console.log("Checking email:", email, "for client code:", clientCode);
 

@@ -16,6 +16,7 @@ const isAuthenticated = (req, res, next) => {
 };
 
 router.get('/', isAuthenticated, (req, res) => {
+  console.log(req.session.username);
   res.render('upload');
 });
 
@@ -24,10 +25,12 @@ router.get('/insert', isAuthenticated, (req, res) => {
 });
 
 router.get('/checkemail', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
   res.render('checkemail');
 });
 
 router.get('/login', (req, res) => {
+  
   res.render('login');
 });
 

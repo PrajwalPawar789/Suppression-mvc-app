@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -14,6 +15,7 @@ const login = async (req, res) => {
     if (result.rows.length > 0) {
       req.session.isAuthenticated = true; // Set isAuthenticated flag in session
       req.session.username = username; // Store the username in session
+      console.log("Logged in username:", username); // Log the username
       res.redirect('/');
     } else {
       req.session.isAuthenticated = false;
@@ -26,12 +28,12 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to logout' });
-      }
-      res.redirect('/login');
-    });
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to logout' });
+    }
+    res.redirect('/login');
+  });
 };
 
 module.exports = { login, logout };

@@ -9,7 +9,6 @@ const pool = new Pool({
     port: 5432
 });
 
-
 async function insertSuppressionData(rowData, index) {
     const client = await pool.connect();
     try {
@@ -57,14 +56,30 @@ async function processExcel(req, res) {
         return res.status(400).send('No file uploaded.');
     }
 
+    if (!req.file.originalname.endsWith(".xlsx")) {
+        return res.status(400).send("Uploaded file is not an Excel file.");
+    }
+
     const path = req.file.path;
     try {
         const rows = await readXlsxFile(path);
         console.log(`Total rows (including header): ${rows.length}`);
- 
+
         const headers = rows[0];
         const dataRows = rows.slice(1);
         console.log(`Processing ${dataRows.length} rows of data.`);
+
+        const requiredHeaders = [
+            'date_', 'month_', 'campaign_id', 'client', 'end_client_name', 'campaign_name',
+            'first_name', 'last_name', 'company_name', 'country', 'phone', 'email',
+            'linkedin_link', 'job_title', 'employee_size', 'asset', 'delivery_spoc',
+            'left_3', 'left_4', 'call_disposition', 'bcl_ops_tl_name', 'response_date'
+        ];
+
+        const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+        if (missingHeaders.length > 0) {
+            return res.status(400).send(`Missing required headers: ${missingHeaders.join(', ')}`);
+        }
 
         const indexes = {
             date: headers.indexOf('date_'),
@@ -125,7 +140,6 @@ async function processExcel(req, res) {
         res.status(500).send('Failed to process file.');
     }
 }
-
 
 module.exports = {
     processExcel,

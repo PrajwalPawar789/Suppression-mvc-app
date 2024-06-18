@@ -83,7 +83,8 @@
 <body>
     <%- include('navbar') %>
     <div class="container">
-        <h2>Insert New Suppression Records / Update </h2>
+        <h2>Insert New Suppression Records / Update</h2>
+        <p>Download a sample Excel file for reference: <a href="/download/sample-insertdata.xlsx" download>Download Sample Excel</a></p>
         <form action="/process" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="excelFile">Excel File</label>
@@ -92,16 +93,16 @@
                     <label class="custom-file-label" for="excelFile">Choose file</label>
                 </div>
             </div>
-            <!-- <div class="form-group">
-                <label for="dateCheck">Select Date Check</label>
-                <select class="custom-select" id="dateCheck" name="dateCheck" required>
-                    <option value="">Choose date check</option>
-                    <option value="6months">6 Months</option>
-                    <option value="1year">1 Year</option>
-                </select>
-            </div> -->
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     </div>
+
+    <script>
+        document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+            var fileName = document.getElementById("excelFile").files[0].name;
+            var nextSibling = e.target.nextElementSibling
+            nextSibling.innerText = fileName
+        });
+    </script>
 </body>
 </html>
