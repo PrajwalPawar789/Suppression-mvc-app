@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const readXlsxFile = require('read-excel-file/node');
+const { format, parse, isValid } = require('date-fns');
 
 const pool = new Pool({
     user: 'postgres',
@@ -107,8 +108,25 @@ async function processExcel(req, res) {
         };
 
         await Promise.all(dataRows.map(async (row, index) => {
+            const parseDate = (dateValue) => {
+                if (dateValue instanceof Date) {
+                    return format(dateValue, 'dd-MMM-yy');
+                } else if (typeof dateValue === 'string') {
+                    const parsedDate = parse(dateValue, 'dd-MMM-yy', new Date());
+                    if (!isValid(parsedDate)) {
+                        throw new Error(`Invalid date format at row ${index + 1}: ${dateValue}`);
+                    }
+                    return format(parsedDate, 'dd-MMM-yy');
+                } else {
+                    throw new Error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1}`);
+                }
+            };
+
+            console.log(`Row ${index + 1} - Raw date value: ${row[indexes.date]}, Type: ${typeof row[indexes.date]}`);
+            console.log(`Row ${index + 1} - Raw response date value: ${row[indexes.responseDate]}, Type: ${typeof row[indexes.responseDate]}`);
+
             const rowData = {
-                date: row[indexes.date],
+                date: parseDate(row[indexes.date]),
                 month: row[indexes.month],
                 campaignId: row[indexes.campaignId],
                 client: row[indexes.client],
@@ -129,7 +147,7 @@ async function processExcel(req, res) {
                 left4: row[indexes.left4],
                 callDisposition: row[indexes.callDisposition],
                 bclOpsTlName: row[indexes.bclOpsTlName],
-                responseDate: row[indexes.responseDate]
+                responseDate: parseDate(row[indexes.responseDate])
             };
             return insertSuppressionData(rowData, index);
         }));
