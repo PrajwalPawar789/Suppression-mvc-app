@@ -109,7 +109,9 @@ async function processExcel(req, res) {
 
         await Promise.all(dataRows.map(async (row, index) => {
             const parseDate = (dateValue) => {
-                if (dateValue instanceof Date) {
+                if (dateValue === '-') {
+                    return '-';
+                } else if (dateValue instanceof Date) {
                     return format(dateValue, 'dd-MMM-yy');
                 } else if (typeof dateValue === 'string') {
                     const parsedDate = parse(dateValue, 'dd-MMM-yy', new Date());

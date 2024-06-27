@@ -17,45 +17,47 @@ async function checkDatabase(firstName, lastName, email, clientCode, companyName
         await client.query('BEGIN');
 
         const query = `
-        WITH data AS (
-            SELECT $1 AS linkedin_link,
-                   $2 AS client_code,
-                   $3 AS left_3,
-                   $4 AS left_4,
-                   $5 AS email_id
-        )
-        SELECT
-            CASE
-                WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
-                ELSE 'Unmatch'
-            END AS match_status,
-            CASE
-                WHEN c.email = d.email_id THEN 'Match'
-                ELSE 'Unmatch'
-            END AS email_status,
-            CASE
-                WHEN c.client = d.client_code THEN 'Match'
-                ELSE 'Unmatch'
-            END AS client_code_status,
-            CASE
-                WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
-                ELSE 'Unmatch'
-            END AS linkedin_link_status,
-            CASE
-            WHEN c.client IS NULL AND c.linkedin_link IS NULL THEN 'Data not found in campaigns'
-            ELSE 'Data found in campaigns'
-            END AS data_found_status
-        FROM
-            data d
-        LEFT JOIN
-            public.campaigns c ON c.client = d.client_code AND c.linkedin_link = d.linkedin_link;
+            WITH data AS (
+                SELECT $1 AS linkedin_link,
+                       $2 AS client_code,
+                       $3 AS left_3,
+                       $4 AS left_4,
+                       $5 AS email_id
+            )
+            SELECT
+                CASE
+                    WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                    ELSE 'Unmatch'
+                END AS match_status,
+                CASE
+                    WHEN c.email = d.email_id THEN 'Match'
+                    ELSE 'unmatch (' || c.email || ')'
+                END AS email_status,
+                CASE
+                    WHEN c.client = d.client_code THEN 'Match'
+                    ELSE 'Unmatch'
+                END AS client_code_status,
+                CASE
+                    WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+                    ELSE 'unmatch (' || c.linkedin_link || ')'
+                END AS linkedin_link_status,
+                CASE
+                    WHEN c.client IS NULL AND c.linkedin_link IS NULL THEN 'Data not found in suppression'
+                    ELSE 'Data found in suppression'
+                END AS data_found_status
+            FROM
+                data d
+            LEFT JOIN
+                public.campaigns c ON (c.client = d.client_code AND c.linkedin_link = d.linkedin_link)
+                                    OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+                                    OR c.email = d.email_id;
         `;
 
         const result = await client.query(query, [linkedinLink, clientCode, calculatedLeft3, calculatedLeft4, email]);
 
         const { data_found_status } = result.rows[0];
 
-        if (data_found_status === 'Data not found in campaigns') {
+        if (data_found_status === 'Data not found in suppression') {
             const existingDataQuery = `
                 SELECT 1 FROM suppression_data 
                 WHERE first_name = $1 
@@ -95,8 +97,8 @@ async function checkEmail(req, res) {
     const linkedinLink = linkedin;
 
     const result = await checkDatabase(firstName, lastName, email, clientCode, companyName, linkedinLink);
-
-    res.json(result);
+    console.log('resulting: ', result);
+    res.render('checkemailresult', { result });
 }
 
 module.exports = {

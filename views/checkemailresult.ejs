@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Email Result</title>
+</head>
+<body>
+    <h1>Check Email Result</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Match Status</th>
+                <th>Email Status</th>
+                <th>Client Code Status</th>
+                <th>LinkedIn Link Status</th>
+                <th>Data Found Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% result.forEach(row => { %>
+                <tr>
+                    <td><%= row.match_status %></td>
+                    <td><%= row.email_status %></td>
+                    <td><%= row.client_code_status %></td>
+                    <td><%= row.linkedin_link_status %></td>
+                    <td><%= row.data_found_status %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</body>
+</html>
