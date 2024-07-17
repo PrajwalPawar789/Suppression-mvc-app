@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 const readXlsxFile = require('read-excel-file/node');
 const { format, parse, isValid } = require('date-fns');
+const logger = require('./logger'); // Add this line
 
 const pool = new Pool({
     user: 'postgres',
@@ -41,34 +42,37 @@ async function insertSuppressionData(rowData, index) {
                 rowData.linkedinLink, rowData.jobTitle, rowData.employeeSize, rowData.asset, rowData.deliverySpoc,
                 rowData.left3, rowData.left4, rowData.callDisposition, rowData.bclOpsTlName, rowData.responseDate
             ]);
-            console.log(`Inserted new record for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
+            logger.info(`Inserted new record for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
         } else {
-            console.log(`Duplicate record found for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
+            logger.info(`Duplicate record found for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
         }
     } catch (error) {
-        console.error(`Error processing row ${index + 1}:`, error);
+        logger.error(`Error processing row ${index + 1}:`, error);
     } finally {
         client.release();
+        logger.info('Database connection released.');
     }
 }
 
 async function processExcel(req, res) {
     if (!req.file) {
+        logger.warn('No file uploaded.');
         return res.status(400).send('No file uploaded.');
     }
 
     if (!req.file.originalname.endsWith(".xlsx")) {
+        logger.warn('Uploaded file is not an Excel file.');
         return res.status(400).send("Uploaded file is not an Excel file.");
     }
 
     const path = req.file.path;
     try {
         const rows = await readXlsxFile(path);
-        console.log(`Total rows (including header): ${rows.length}`);
+        logger.info(`Total rows (including header): ${rows.length}`);
 
         const headers = rows[0];
         const dataRows = rows.slice(1);
-        console.log(`Processing ${dataRows.length} rows of data.`);
+        logger.info(`Processing ${dataRows.length} rows of data.`);
 
         const requiredHeaders = [
             'date_', 'month_', 'campaign_id', 'client', 'end_client_name', 'campaign_name',
@@ -79,6 +83,7 @@ async function processExcel(req, res) {
 
         const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
         if (missingHeaders.length > 0) {
+            logger.warn(`Missing required headers: ${missingHeaders.join(', ')}`);
             return res.status(400).send(`Missing required headers: ${missingHeaders.join(', ')}`);
         }
 
@@ -116,16 +121,21 @@ async function processExcel(req, res) {
                 } else if (typeof dateValue === 'string') {
                     const parsedDate = parse(dateValue, 'dd-MMM-yy', new Date());
                     if (!isValid(parsedDate)) {
+                        logger.error(`Invalid date format at row ${index + 1}: ${dateValue}`);
                         throw new Error(`Invalid date format at row ${index + 1}: ${dateValue}`);
                     }
                     return format(parsedDate, 'dd-MMM-yy');
+                } else if (typeof dateValue === 'number') {
+                    const excelEpoch = new Date(0, 0, dateValue - (25567 + 1)); // days since 1900-01-01
+                    return format(excelEpoch, 'dd-MMM-yy');
                 } else {
-                    throw new Error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1}`);
+                    logger.error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1} uploaded date ${dateValue}`);
+                    throw new Error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1} uploaded date ${dateValue}`);
                 }
             };
 
-            console.log(`Row ${index + 1} - Raw date value: ${row[indexes.date]}, Type: ${typeof row[indexes.date]}`);
-            console.log(`Row ${index + 1} - Raw response date value: ${row[indexes.responseDate]}, Type: ${typeof row[indexes.responseDate]}`);
+            logger.info(`Row ${index + 1} - Raw date value: ${row[indexes.date]}, Type: ${typeof row[indexes.date]}`);
+            logger.info(`Row ${index + 1} - Raw response date value: ${row[indexes.responseDate]}, Type: ${typeof row[indexes.responseDate]}`);
 
             const rowData = {
                 date: parseDate(row[indexes.date]),
@@ -156,7 +166,7 @@ async function processExcel(req, res) {
 
         res.send('Processed successfully. Check server logs for results.');
     } catch (err) {
-        console.error('Error processing file:', err);
+        logger.error('Error processing file:', err);
         res.status(500).send('Failed to process file.');
     }
 }

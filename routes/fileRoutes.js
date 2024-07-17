@@ -1,10 +1,15 @@
 // routes/fileRoutes.js
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const express = require('express');
 const router = express.Router();
 const fileController = require('../controllers/fileController');
 const suppressionDataController = require('../controllers/suppressionDataController');
 const checkemailController = require('../controllers/checkemailController');
 const loginController = require('../controllers/loginController'); // Add this line
+const invalidemailController = require('../controllers/invalidemail');
+const globalemailsuppression = require('../controllers/globalemailsuppression');
+const dncsuppression = require('../controllers/dncsuppression');
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -74,11 +79,31 @@ router.get('/logout', (req, res) => {
     });
   });
 
+  router.get('/invalidemailcheck', isAuthenticated, (req, res) => {
+    // console.log(req.session.username);
+    res.render('invalidemailcheck');
+  });
+
+  router.get('/globalemailsuppression', isAuthenticated, (req, res) => {
+    // console.log(req.session.username);
+    res.render('globalemailsuppression');
+  });
+
+  router.get('/dncsuppression', isAuthenticated, (req, res) => {
+    // console.log(req.session.username);
+    res.render('dncsuppression');
+  });
+
+  
+
 router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
 router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);
 router.post('/process', isAuthenticated, fileController.upload.single('excelFile'), suppressionDataController.processExcel);
 
 router.post('/checkemail', isAuthenticated, checkemailController.checkEmail);
 router.post('/login', loginController.login); // Define the new route for login
+router.post('/invalidemailprocess', isAuthenticated, upload.single('file'), invalidemailController.uploadFile);
+router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), globalemailsuppression.uploadFile);
+router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
 
 module.exports = router;
