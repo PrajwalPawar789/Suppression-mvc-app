@@ -201,11 +201,11 @@ const Imagegrid = () => {
       <MasterPlan/>
       <EMICalculator/>
     
-      <Map/>
+      {/* <Map/>
       <Faq/>
       <Slider/>
       <Footer/>
-      <Footer2/>
+      <Footer2/> */}
 
     </>
   );
