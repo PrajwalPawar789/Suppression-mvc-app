@@ -101,7 +101,6 @@
                     <option value="">Choose client code</option>
                     <option value="All">All (Excluding HN36)</option>
                     <option value="MSFT">MSFT</option>
-                    <!-- <option value="All(Excluding HN36)">All(Excluding HN36)</option> -->
                     <option value="TE72">TE72</option>
                     <option value="AR13">AR13</option>
                     <option value="TE16">TE16</option>
@@ -119,6 +118,7 @@
                 <label for="dateFilter">Date Filter</label>
                 <select class="custom-select" id="dateFilter" name="dateFilter" required>
                     <option value="">Choose date filter</option>
+                    <option value="3" class="threeMonths">3 Months</option>
                     <option value="6">6 Months</option>
                     <option value="12">1 Year</option>
                 </select>
@@ -138,6 +138,23 @@
                 fileLabel.textContent = fileInput.files[0].name;
             } else {
                 fileLabel.textContent = 'Choose file';
+            }
+        });
+
+        // Get the client code and date filter elements
+        const clientCode = document.getElementById('clientCode');
+        const dateFilter = document.getElementById('dateFilter');
+        const threeMonthsOption = document.querySelector('.threeMonths');
+
+        // Hide the 3 Months option by default
+        threeMonthsOption.style.display = 'none';
+
+        // Show or hide the 3 Months option based on client code selection
+        clientCode.addEventListener('change', () => {
+            if (clientCode.value === 'HN36') {
+                threeMonthsOption.style.display = 'block';
+            } else {
+                threeMonthsOption.style.display = 'none';
             }
         });
     </script>
