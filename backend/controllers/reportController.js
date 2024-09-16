@@ -24,38 +24,46 @@ const testConnection = async () => {
 const getReportData = async (req, res) => {
   console.log("Inside the getReportData function");
 
+  const date = 3;
+
+  const interval = '3 days'; 
+  const interval1 = `${date} days`; 
+
   const query = `
-    SELECT  
-      date_,
-      client, 
-      delivery_spoc, 
-      country, 
-      campaign_name, 
-      end_client_name,
-      call_disposition,
-      COUNT(*) AS total_records
-    FROM 
-      public.campaigns
-    WHERE
-      date_ ~ $1 AND
-      TO_DATE(date_, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '1 day'
-    GROUP BY 
-      date_,
-      client, 
-      delivery_spoc, 
-      country, 
-      campaign_name,
-      end_client_name,
-      call_disposition
-    ORDER BY 
-      date_ ASC, 
-      client ASC, 
-      delivery_spoc ASC, 
-      country ASC, 
-      campaign_name ASC, 
-      end_client_name ASC, 
-      call_disposition ASC;
-  `;
+  SELECT  
+    date_,
+    client, 
+    delivery_spoc, 
+    country, 
+    campaign_name, 
+    end_client_name,
+    call_disposition,
+    bcl_ops_tl_name,
+    COUNT(*) AS total_records
+  FROM 
+    public.campaigns
+  WHERE
+    date_ ~ $1 AND
+    TO_DATE(date_, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '${interval1}'
+  GROUP BY 
+    date_,
+    client, 
+    delivery_spoc, 
+    country, 
+    campaign_name,
+    end_client_name,
+    call_disposition,
+    bcl_ops_tl_name
+  ORDER BY 
+    date_ ASC, 
+    client ASC, 
+    delivery_spoc ASC, 
+    country ASC, 
+    campaign_name ASC, 
+    end_client_name ASC, 
+    call_disposition ASC,
+    bcl_ops_tl_name ASC;
+`;
 
   // Regular expression for date format validation
   const values = ['^\\d{2}-[A-Za-z]{3}-\\d{2}$'];
