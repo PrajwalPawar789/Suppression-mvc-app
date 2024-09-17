@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { Pool } = require('pg');
 const ExcelJS = require('exceljs');
+const logger = require('./logger'); // Ensure you have a logger module
 
 // PostgreSQL connection settings
 const pool = new Pool({
@@ -22,7 +23,9 @@ const normalizeString = (str) => {
   return str.trim();
 };
 
-async function checkDatabase(email, companyName, domain) {
+// Function to check the database for a match based on email, company name, and domain
+async function checkDatabase(email, companyName, domain, username) {
+  logger.info(`${username} - Checking database for email: ${email}, company: ${companyName}, domain: ${domain}`);
   const client = await pool.connect();
   try {
     const query = `
@@ -45,15 +48,17 @@ async function checkDatabase(email, companyName, domain) {
     `;
     const result = await client.query(query, [email, companyName, domain]);
     const row = result.rows[0];
-    return row ? row : { 
+    const status = row ? row : { 
       email_status: 'Unmatch', 
       company_status: 'Unmatch', 
       domain_status: 'Unmatch',
       dnc_company_status: 'Unmatch',
       dnc_domain_status: 'Unmatch' 
     };
+    logger.info(`${username} - Database check result: ${JSON.stringify(status)}`);
+    return status;
   } catch (error) {
-    console.error("Database query error:", error);
+    logger.error(`${username} - Database query error for email ${email}: ${error.message}`);
     return { 
       email_status: 'Error', 
       company_status: 'Error', 
@@ -63,11 +68,13 @@ async function checkDatabase(email, companyName, domain) {
     };
   } finally {
     client.release();
+    logger.info(`${username} - Database connection released.`);
   }
 }
 
 // Function to process the uploaded file
-async function processFile(filePath) {
+async function processFile(filePath, username) {
+  logger.info(`${username} - Processing file: ${filePath}`);
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
@@ -77,6 +84,7 @@ async function processFile(filePath) {
   const companyNameIndex = worksheet.getRow(1).values.indexOf('Company Name');
   const domainIndex = worksheet.getRow(1).values.indexOf('Domain');
   if (emailIndex === -1 || companyNameIndex === -1 || domainIndex === -1) {
+    logger.error(`${username} - Missing required columns: Email ID, Company Name, or Domain`);
     return { error: 'Missing required columns: Email ID, Company Name, or Domain' };
   }
 
@@ -99,7 +107,7 @@ async function processFile(filePath) {
     const domain = normalizeString(row.getCell(domainIndex).value);
     
     // Fetch status from the database
-    const { email_status, company_status, domain_status, dnc_company_status, dnc_domain_status } = await checkDatabase(email, companyName, domain);
+    const { email_status, company_status, domain_status, dnc_company_status, dnc_domain_status } = await checkDatabase(email, companyName, domain, username);
     
     // Set the status in the new columns
     row.getCell(statusColumn.number).value = email_status;
@@ -108,29 +116,36 @@ async function processFile(filePath) {
     row.getCell(dncCompanyStatusColumn.number).value = dnc_company_status;
     row.getCell(dncDomainStatusColumn.number).value = dnc_domain_status;
     row.commit();
+    logger.info(`${username} - Processed row ${i} with email ${email}, company ${companyName}, domain ${domain}`);
   }
 
   const newFilePath = "Updated-" + Date.now() + ".xlsx";
   await workbook.xlsx.writeFile(newFilePath);
+  logger.info(`${username} - File processed successfully. New file created: ${newFilePath}`);
   return newFilePath;
 }
 
 exports.uploadFile = async (req, res) => {
+  const username = req.session.username || 'Anonymous'; // Fallback if username is not set
   if (!req.file) {
+    logger.warn(`${username} - No file uploaded.`);
     return res.status(400).send("No file uploaded.");
   }
 
   const filePath = req.file.path;
   try {
-    const result = await processFile(filePath);
+    const result = await processFile(filePath, username);
     if (result.error) {
+      logger.error(`${username} - File processing error: ${result.error}`);
       return res.status(400).send(result.error);
     }
+    logger.info(`${username} - File download initiated: ${result}`);
     res.download(result);
   } catch (error) {
-    console.error(error);
+    logger.error(`${username} - Error while processing file: ${error.message}`);
     res.status(500).send("An error occurred while processing the file.");
   } finally {
     fs.unlinkSync(filePath);
+    logger.info(`${username} - Temporary file deleted: ${filePath}`);
   }
 };

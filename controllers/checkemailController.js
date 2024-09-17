@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const logger = require('./logger'); // Add this line
+const logger = require('./logger'); // Ensure you have a logger module
 
 const pool = new Pool({
     user: 'postgres',
@@ -9,57 +9,59 @@ const pool = new Pool({
     port: 5432
 });
 
-async function checkDatabase(firstName, lastName, email, clientCode, companyName, linkedinLink) {
+async function checkDatabase(firstName, lastName, email, clientCode, companyName, linkedinLink, username) {
     const calculatedLeft3 = `${firstName.substring(0, 3)}${lastName.substring(0, 3)}${companyName.substring(0, 3)}`;
     const calculatedLeft4 = `${firstName.substring(0, 4)}${lastName.substring(0, 4)}${companyName.substring(0, 4)}`;
 
+    logger.info(`${username} - Checking database for: email=${email}, clientCode=${clientCode}, companyName=${companyName}, linkedinLink=${linkedinLink}`);
+    
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        logger.info('Database connection established.');
+        logger.info(`${username} - Database transaction started.`);
 
         const query = `
-WITH data AS (
-    SELECT $1 AS linkedin_link,
-           $2 AS client_code,
-           $3 AS left_3,
-           $4 AS left_4,
-           $5 AS email_id
-)
-SELECT
-    CASE
-        WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
-        ELSE 'Unmatch'
-    END AS match_status,
-    CASE
-        WHEN c.email = d.email_id THEN 'Match'
-        ELSE 'unmatch'
-    END AS email_status,
-    CASE
-        WHEN c.client = d.client_code THEN 'Match'
-        ELSE 'Unmatch'
-    END AS client_code_status,
-    CASE
-        WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
-        ELSE 'unmatch'
-    END AS linkedin_link_status,
-    CASE
-        WHEN c.client IS NULL AND c.linkedin_link IS NULL THEN 'Data not found in suppression'
-        ELSE 'Data found in suppression'
-    END AS data_found_status
-FROM
-    data d
-LEFT JOIN
-    public.campaigns c ON ((c.client = d.client_code AND c.linkedin_link = d.linkedin_link)
-                          OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
-                          OR c.email = d.email_id)
-                          AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'));
-
-`;
+        WITH data AS (
+            SELECT $1 AS linkedin_link,
+                   $2 AS client_code,
+                   $3 AS left_3,
+                   $4 AS left_4,
+                   $5 AS email_id
+        )
+        SELECT
+            CASE
+                WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                ELSE 'Unmatch'
+            END AS match_status,
+            CASE
+                WHEN c.email = d.email_id THEN 'Match'
+                ELSE 'Unmatch'
+            END AS email_status,
+            CASE
+                WHEN c.client = d.client_code THEN 'Match'
+                ELSE 'Unmatch'
+            END AS client_code_status,
+            CASE
+                WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+                ELSE 'Unmatch'
+            END AS linkedin_link_status,
+            CASE
+                WHEN c.client IS NULL AND c.linkedin_link IS NULL THEN 'Data not found in suppression'
+                ELSE 'Data found in suppression'
+            END AS data_found_status
+        FROM
+            data d
+        LEFT JOIN
+            public.campaigns c ON ((c.client = d.client_code AND c.linkedin_link = d.linkedin_link)
+                                OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+                                OR c.email = d.email_id)
+                                AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'));
+        `;
 
         const result = await client.query(query, [linkedinLink, clientCode, calculatedLeft3, calculatedLeft4, email]);
-
         const { data_found_status } = result.rows[0];
+
+        logger.info(`${username} - Query result: ${JSON.stringify(result.rows[0])}`);
 
         if (data_found_status === 'Data not found in suppression') {
             const existingDataQuery = `
@@ -79,34 +81,36 @@ LEFT JOIN
                     VALUES ($1, $2, $3, $4, $5, $6, $7);
                 `;
                 await client.query(insertQuery, [firstName, lastName, companyName, email, clientCode, linkedinLink, data_found_status]);
-                logger.info(`Inserted data into suppression_data: ${firstName}, ${lastName}, ${companyName}, ${email}, ${clientCode}, ${linkedinLink}, ${data_found_status}`);
+                logger.info(`${username} - Inserted data into suppression_data: ${firstName}, ${lastName}, ${companyName}, ${email}, ${clientCode}, ${linkedinLink}, ${data_found_status}`);
             } else {
-                logger.info('Data already exists in suppression_data.');
+                logger.info(`${username} - Data already exists in suppression_data.`);
             }
         }
 
         await client.query('COMMIT');
-        logger.info('Transaction committed.');
+        logger.info(`${username} - Transaction committed.`);
         return result.rows;
     } catch (error) {
         await client.query('ROLLBACK');
-        logger.error('Database query error:', error);
+        logger.error(`${username} - Database query error: ${error.message}`);
         return [];
     } finally {
         client.release();
-        logger.info('Database connection released.');
+        logger.info(`${username} - Database connection released.`);
     }
 }
 
 async function checkEmail(req, res) {
-    logger.info(`Username ${req.session.username} from checkemail`);
+    const username = req.session.username || 'Anonymous'; // Fallback if username is not set
+    logger.info(`${username} - Check email request received.`);
+
     const { email, clientCode, firstName, lastName, companyName, linkedin } = req.body;
-    logger.info(`Checking email: ${email} for client code: ${clientCode}`);
+    logger.info(`${username} - Checking email: ${email}, clientCode: ${clientCode}, companyName: ${companyName}, linkedinLink: ${linkedin}`);
 
     const linkedinLink = linkedin;
+    const result = await checkDatabase(firstName, lastName, email, clientCode, companyName, linkedinLink, username);
 
-    const result = await checkDatabase(firstName, lastName, email, clientCode, companyName, linkedinLink);
-    logger.info(`Result: ${JSON.stringify(result)}`);
+    logger.info(`${username} - Check email result: ${JSON.stringify(result)}`);
     res.render('checkemailresult', { result });
 }
 

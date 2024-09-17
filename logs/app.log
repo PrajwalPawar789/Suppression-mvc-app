@@ -161,3 +161,104 @@
 2024-09-17T18:22:11.082Z [info]: Total rows (including header): 47
 2024-09-17T18:22:11.085Z [info]: Processing 46 rows of data.
 2024-09-17T18:22:11.086Z [warn]: Missing required headers: date_, month_, campaign_id, client, end_client_name, campaign_name, first_name, last_name, company_name, country, phone, email, linkedin_link, job_title, employee_size, asset, delivery_spoc, left_3, left_4, call_disposition, bcl_ops_tl_name, response_date
+2024-09-17T20:47:22.961Z [info]: Total rows (including header): 3
+2024-09-17T20:47:22.964Z [info]: Processing 2 rows of data.
+2024-09-17T20:47:22.964Z [warn]: Missing required headers: date_, month_, campaign_id, client, end_client_name, campaign_name, first_name, last_name, company_name, country, phone, email, linkedin_link, job_title, employee_size, asset, delivery_spoc, left_3, left_4, call_disposition, bcl_ops_tl_name, response_date
+2024-09-17T21:00:05.316Z [info]: Inserted invalid email address: prajwal.pawar@manlitics.com
+2024-09-17T21:00:05.343Z [info]: Inserted invalid email address: prajwal_pawar@manlitics.com
+2024-09-17T21:00:05.345Z [info]: Database connection released.
+2024-09-17T21:01:14.489Z [info]: Inserted invalid email address: prajwal.pawar@manlitics.com
+2024-09-17T21:01:14.492Z [info]: Inserted invalid email address: prajwal_pawar@manlitics.com
+2024-09-17T21:01:14.493Z [info]: Database connection released.
+2024-09-17T21:01:46.949Z [info]: Inserted invalid email address: prajwal.pawar@manlitics.com
+2024-09-17T21:01:46.952Z [info]: Inserted invalid email address: prajwal_pawar@manlitics.com
+2024-09-17T21:01:46.953Z [info]: Database connection released.
+2024-09-17T21:03:13.461Z [info]: Inserted invalid email address: prajwal.pawar@manlitics.com
+2024-09-17T21:03:13.464Z [info]: Inserted invalid email address: prajwal_pawar@manlitics.com
+2024-09-17T21:03:13.466Z [info]: Database connection released.
+2024-09-17T21:04:04.772Z [info]:  prajwal Inserted invalid email address: prajwal.pawar@manlitics.com
+2024-09-17T21:04:04.775Z [info]:  prajwal Inserted invalid email address: prajwal_pawar@manlitics.com
+2024-09-17T21:04:04.776Z [info]: Database connection released.
+2024-09-17T21:51:56.297Z [info]: Login attempt for username: prajwal
+2024-09-17T21:51:56.380Z [info]: Successful login for username: prajwal
+2024-09-17T21:58:14.760Z [info]: Login attempt for username: prajwal
+2024-09-17T21:58:14.843Z [info]: Successful login for username: prajwal
+2024-09-17T21:58:33.292Z [info]: User prajwal processing file: uploads\54a423369c3fa6fc721739fb2f4ac627
+2024-09-17T21:58:33.375Z [error]: User prajwal missing column: Email ID
+2024-09-17T21:58:33.376Z [error]: User prajwal file processing error: Missing column: Email ID
+2024-09-17T21:58:33.378Z [info]: User prajwal temporary file deleted: uploads\54a423369c3fa6fc721739fb2f4ac627
+2024-09-17T21:58:44.651Z [info]: User prajwal processing file: uploads\216112964bd40a3172b1943447647f86
+2024-09-17T21:58:44.673Z [info]: User prajwal checking database for email: prajwal.pawar@manlitics.com
+2024-09-17T21:58:44.758Z [info]: User prajwal database check result for prajwal.pawar@manlitics.com: Unmatch
+2024-09-17T21:58:44.758Z [info]: User prajwal database connection released after checking email: prajwal.pawar@manlitics.com
+2024-09-17T21:58:44.759Z [info]: User prajwal processed row 2 with email prajwal.pawar@manlitics.com - Match Status: Unmatch
+2024-09-17T21:58:44.759Z [info]: User prajwal checking database for email: prajwal_pawar@manlitics.com
+2024-09-17T21:58:44.761Z [info]: User prajwal database check result for prajwal_pawar@manlitics.com: Unmatch
+2024-09-17T21:58:44.761Z [info]: User prajwal database connection released after checking email: prajwal_pawar@manlitics.com
+2024-09-17T21:58:44.761Z [info]: User prajwal processed row 3 with email prajwal_pawar@manlitics.com - Match Status: Unmatch
+2024-09-17T21:58:44.822Z [info]: User prajwal file processed successfully. New file created: Updated-1726610324762.xlsx
+2024-09-17T21:58:44.823Z [info]: User prajwal file download initiated: Updated-1726610324762.xlsx
+2024-09-17T21:58:44.826Z [info]: User prajwal temporary file deleted: uploads\216112964bd40a3172b1943447647f86
+2024-09-17T22:04:26.118Z [info]: Login attempt for username: prajwal
+2024-09-17T22:04:26.199Z [info]: Successful login for username: prajwal
+2024-09-17T22:04:31.362Z [info]: prajwal - Processing file: uploads\57d32cc09db6027d31845473863abae4
+2024-09-17T22:04:31.435Z [info]: prajwal - Checking database for email: prajwal.pawar@manlitics.com
+2024-09-17T22:04:31.494Z [info]: prajwal - Database check result for email prajwal.pawar@manlitics.com: Match
+2024-09-17T22:04:31.495Z [info]: prajwal - Database connection released after checking email: prajwal.pawar@manlitics.com
+2024-09-17T22:04:31.496Z [info]: prajwal - Processed row 2 with email prajwal.pawar@manlitics.com - Match Status: Match
+2024-09-17T22:04:31.496Z [info]: prajwal - Checking database for email: prajwal_pawar@manlitics.com
+2024-09-17T22:04:31.498Z [info]: prajwal - Database check result for email prajwal_pawar@manlitics.com: Match
+2024-09-17T22:04:31.499Z [info]: prajwal - Database connection released after checking email: prajwal_pawar@manlitics.com
+2024-09-17T22:04:31.499Z [info]: prajwal - Processed row 3 with email prajwal_pawar@manlitics.com - Match Status: Match
+2024-09-17T22:04:31.554Z [info]: prajwal - File processed successfully. New file created: Updated-1726610671499.xlsx
+2024-09-17T22:04:31.557Z [info]: prajwal - File download initiated: Updated-1726610671499.xlsx
+2024-09-17T22:04:31.560Z [info]: prajwal - Temporary file deleted: uploads\57d32cc09db6027d31845473863abae4
+2024-09-17T22:07:45.222Z [info]: Login attempt for username: prajwal
+2024-09-17T22:07:45.414Z [info]: Successful login for username: prajwal
+2024-09-17T22:08:19.146Z [info]: prajwal - Processing file: uploads\70d5a52ba4dc905b517e1f8fb6864f52
+2024-09-17T22:08:19.229Z [info]: prajwal - Checking database for email: prajwal.pawar@manlitics.com, company: pp, domain: lkkjl
+2024-09-17T22:08:19.315Z [info]: prajwal - Database check result: {"email_status":"Unmatch","company_status":"Unmatch","domain_status":"Unmatch","dnc_company_status":"Unmatch","dnc_domain_status":"Unmatch"}
+2024-09-17T22:08:19.316Z [info]: prajwal - Database connection released.
+2024-09-17T22:08:19.316Z [info]: prajwal - Processed row 2 with email prajwal.pawar@manlitics.com, company pp, domain lkkjl
+2024-09-17T22:08:19.317Z [info]: prajwal - Checking database for email: prajwal_pawar@manlitics.com, company: flksj, domain: lksjdflkj
+2024-09-17T22:08:19.319Z [info]: prajwal - Database check result: {"email_status":"Unmatch","company_status":"Unmatch","domain_status":"Unmatch","dnc_company_status":"Unmatch","dnc_domain_status":"Unmatch"}
+2024-09-17T22:08:19.320Z [info]: prajwal - Database connection released.
+2024-09-17T22:08:19.321Z [info]: prajwal - Processed row 3 with email prajwal_pawar@manlitics.com, company flksj, domain lksjdflkj
+2024-09-17T22:08:19.391Z [info]: prajwal - File processed successfully. New file created: Updated-1726610899321.xlsx
+2024-09-17T22:08:19.394Z [info]: prajwal - File download initiated: Updated-1726610899321.xlsx
+2024-09-17T22:08:19.397Z [info]: prajwal - Temporary file deleted: uploads\70d5a52ba4dc905b517e1f8fb6864f52
+2024-09-17T22:10:05.663Z [info]: Login attempt for username: prajwal
+2024-09-17T22:10:05.747Z [info]: Successful login for username: prajwal
+2024-09-17T22:10:17.742Z [info]: prajwal - Check email request received.
+2024-09-17T22:10:17.743Z [info]: prajwal - Checking email: prajwal_pawar@manlitics.com, clientCode: AR13, companyName: sdf, linkedinLink: sfsdf
+2024-09-17T22:10:17.744Z [info]: prajwal - Checking database for: email=prajwal_pawar@manlitics.com, clientCode=AR13, companyName=sdf, linkedinLink=sfsdf
+2024-09-17T22:10:17.829Z [info]: prajwal - Database transaction started.
+2024-09-17T22:10:17.854Z [info]: prajwal - Query result: {"match_status":"Unmatch","email_status":"Unmatch","client_code_status":"Unmatch","linkedin_link_status":"Unmatch","data_found_status":"Data not found in suppression"}
+2024-09-17T22:10:17.879Z [info]: prajwal - Inserted data into suppression_data: sdf, sdf, sdf, prajwal_pawar@manlitics.com, AR13, sfsdf, Data not found in suppression
+2024-09-17T22:10:17.881Z [info]: prajwal - Transaction committed.
+2024-09-17T22:10:17.882Z [info]: prajwal - Database connection released.
+2024-09-17T22:10:17.882Z [info]: prajwal - Check email result: [{"match_status":"Unmatch","email_status":"Unmatch","client_code_status":"Unmatch","linkedin_link_status":"Unmatch","data_found_status":"Data not found in suppression"}]
+2024-09-17T22:11:53.478Z [info]: Login attempt for username: prajwal
+2024-09-17T22:11:53.560Z [info]: Successful login for username: prajwal
+2024-09-17T22:11:59.505Z [info]: prajwal - File upload request received.
+2024-09-17T22:11:59.569Z [info]: prajwal - Total rows (including header): 3
+2024-09-17T22:11:59.570Z [info]: prajwal - Processing 2 rows of data.
+2024-09-17T22:11:59.572Z [warn]: prajwal - Missing required headers: date_, month_, campaign_id, client, end_client_name, campaign_name, first_name, last_name, company_name, country, phone, email, linkedin_link, job_title, employee_size, asset, delivery_spoc, left_3, left_4, call_disposition, bcl_ops_tl_name, response_date
+2024-09-17T22:12:41.026Z [info]: prajwal - File upload request received.
+2024-09-17T22:12:41.047Z [info]: prajwal - Total rows (including header): 2
+2024-09-17T22:12:41.048Z [info]: prajwal - Processing 1 rows of data.
+2024-09-17T22:12:41.051Z [info]: prajwal - Row 1 - Raw date value: -, Type: string
+2024-09-17T22:12:41.054Z [info]: prajwal - Row 1 - Raw response date value: -, Type: string
+2024-09-17T22:12:41.150Z [info]: prajwal - Inserted new record for row 1: left3=-, left4=-, client=-
+2024-09-17T22:12:41.151Z [info]: prajwal - Database connection released.
+2024-09-17T22:21:04.989Z [info]: Login attempt for username: prajwal
+2024-09-17T22:21:05.076Z [info]: Successful login for username: prajwal
+2024-09-17T22:21:32.711Z [info]: prajwal - File upload request received.
+2024-09-17T22:21:32.770Z [info]: prajwal - Total rows (including header): 2
+2024-09-17T22:21:32.770Z [info]: prajwal - Processing 1 rows of data.
+2024-09-17T22:21:32.771Z [info]: prajwal - Row 1 - Raw date value: -, Type: string
+2024-09-17T22:21:32.771Z [info]: prajwal - Row 1 - Raw response date value: -, Type: string
+2024-09-17T22:21:33.036Z [info]: prajwal - Duplicate record found for row 1: email=-, left3=-, left4=-, client=-
+2024-09-17T22:21:33.037Z [info]: prajwal - Database connection released.
+2024-09-17T22:26:56.834Z [info]: Login attempt for username: prajwal
+2024-09-17T22:26:56.926Z [info]: Successful login for username: prajwal

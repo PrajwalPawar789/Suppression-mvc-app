@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 const readXlsxFile = require('read-excel-file/node');
 const { format, parse, isValid } = require('date-fns');
-const logger = require('./logger'); // Add this line
+const logger = require('./logger'); // Ensure you have a logger module
 
 const pool = new Pool({
     user: 'postgres',
@@ -11,7 +11,7 @@ const pool = new Pool({
     port: 5432
 });
 
-async function insertSuppressionData(rowData, index) {
+async function insertSuppressionData(rowData, index, username) {
     const client = await pool.connect();
     try {
         const checkQuery = `
@@ -42,37 +42,40 @@ async function insertSuppressionData(rowData, index) {
                 rowData.linkedinLink, rowData.jobTitle, rowData.employeeSize, rowData.asset, rowData.deliverySpoc,
                 rowData.left3, rowData.left4, rowData.callDisposition, rowData.bclOpsTlName, rowData.responseDate
             ]);
-            logger.info(`Inserted new record for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
+            logger.info(`${username} - Inserted new record for row ${index + 1}: email=${rowData.email}, left3=${rowData.left3}, left4=${rowData.left4}, client=${rowData.client}`);
         } else {
-            logger.info(`Duplicate record found for row ${index + 1}: left3: ${rowData.left3}, left4: ${rowData.left4}, client: ${rowData.client}`);
+            logger.info(`${username} - Duplicate record found for row ${index + 1}: email=${rowData.email}, left3=${rowData.left3}, left4=${rowData.left4}, client=${rowData.client}`);
         }
     } catch (error) {
-        logger.error(`Error processing row ${index + 1}:`, error);
+        logger.error(`${username} - Error processing row ${index + 1}: ${error.message}`);
     } finally {
         client.release();
-        logger.info('Database connection released.');
+        logger.info(`${username} - Database connection released.`);
     }
 }
 
 async function processExcel(req, res) {
+    const username = req.session.username || 'Anonymous'; // Fallback if username is not set
+    logger.info(`${username} - File upload request received.`);
+
     if (!req.file) {
-        logger.warn('No file uploaded.');
+        logger.warn(`${username} - No file uploaded.`);
         return res.status(400).send('No file uploaded.');
     }
 
     if (!req.file.originalname.endsWith(".xlsx")) {
-        logger.warn('Uploaded file is not an Excel file.');
+        logger.warn(`${username} - Uploaded file is not an Excel file.`);
         return res.status(400).send("Uploaded file is not an Excel file.");
     }
 
     const path = req.file.path;
     try {
         const rows = await readXlsxFile(path);
-        logger.info(`Total rows (including header): ${rows.length}`);
+        logger.info(`${username} - Total rows (including header): ${rows.length}`);
 
         const headers = rows[0];
         const dataRows = rows.slice(1);
-        logger.info(`Processing ${dataRows.length} rows of data.`);
+        logger.info(`${username} - Processing ${dataRows.length} rows of data.`);
 
         const requiredHeaders = [
             'date_', 'month_', 'campaign_id', 'client', 'end_client_name', 'campaign_name',
@@ -83,7 +86,7 @@ async function processExcel(req, res) {
 
         const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
         if (missingHeaders.length > 0) {
-            logger.warn(`Missing required headers: ${missingHeaders.join(', ')}`);
+            logger.warn(`${username} - Missing required headers: ${missingHeaders.join(', ')}`);
             return res.status(400).send(`Missing required headers: ${missingHeaders.join(', ')}`);
         }
 
@@ -121,7 +124,7 @@ async function processExcel(req, res) {
                 } else if (typeof dateValue === 'string') {
                     const parsedDate = parse(dateValue, 'dd-MMM-yy', new Date());
                     if (!isValid(parsedDate)) {
-                        logger.error(`Invalid date format at row ${index + 1}: ${dateValue}`);
+                        logger.error(`${username} - Invalid date format at row ${index + 1}: ${dateValue}`);
                         throw new Error(`Invalid date format at row ${index + 1}: ${dateValue}`);
                     }
                     return format(parsedDate, 'dd-MMM-yy');
@@ -129,13 +132,13 @@ async function processExcel(req, res) {
                     const excelEpoch = new Date(0, 0, dateValue - (25567 + 1)); // days since 1900-01-01
                     return format(excelEpoch, 'dd-MMM-yy');
                 } else {
-                    logger.error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1} uploaded date ${dateValue}`);
-                    throw new Error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1} uploaded date ${dateValue}`);
+                    logger.error(`${username} - Unexpected dateValue type: ${typeof dateValue} at row ${index + 1}. Uploaded date: ${dateValue}`);
+                    throw new Error(`Unexpected dateValue type: ${typeof dateValue} at row ${index + 1}. Uploaded date: ${dateValue}`);
                 }
             };
 
-            logger.info(`Row ${index + 1} - Raw date value: ${row[indexes.date]}, Type: ${typeof row[indexes.date]}`);
-            logger.info(`Row ${index + 1} - Raw response date value: ${row[indexes.responseDate]}, Type: ${typeof row[indexes.responseDate]}`);
+            logger.info(`${username} - Row ${index + 1} - Raw date value: ${row[indexes.date]}, Type: ${typeof row[indexes.date]}`);
+            logger.info(`${username} - Row ${index + 1} - Raw response date value: ${row[indexes.responseDate]}, Type: ${typeof row[indexes.responseDate]}`);
 
             const rowData = {
                 date: parseDate(row[indexes.date]),
@@ -161,12 +164,12 @@ async function processExcel(req, res) {
                 bclOpsTlName: row[indexes.bclOpsTlName],
                 responseDate: parseDate(row[indexes.responseDate])
             };
-            return insertSuppressionData(rowData, index);
+            return insertSuppressionData(rowData, index, username);
         }));
 
         res.send('Processed successfully. Check server logs for results.');
     } catch (err) {
-        logger.error('Error processing file:', err);
+        logger.error(`${username} - Error processing file: ${err.message}`);
         res.status(500).send('Failed to process file.');
     }
 }

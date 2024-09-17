@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { Pool } = require('pg');
 const ExcelJS = require('exceljs');
+const logger = require('./logger'); // Ensure you have a logger module
 
 // PostgreSQL connection settings
 const pool = new Pool({
@@ -23,7 +24,8 @@ const normalizeString = (str) => {
 };
 
 // Function to check the database for a match based on email
-async function checkDatabase(email) {
+async function checkDatabase(email, username) {
+  logger.info(`User ${username} checking database for email: ${email}`);
   const client = await pool.connect();
   try {
     const query = `
@@ -33,17 +35,20 @@ async function checkDatabase(email) {
     `;
     const result = await client.query(query, [email]);
     const row = result.rows[0];
+    logger.info(`User ${username} database check result for ${email}: ${row ? row.match_status : 'Unmatch'}`);
     return row ? row.match_status : 'Unmatch';
   } catch (error) {
-    console.error("Database query error:", error);
+    logger.error(`User ${username} database query error for email ${email}: ${error.message}`);
     return 'Error';
   } finally {
     client.release();
+    logger.info(`User ${username} database connection released after checking email: ${email}`);
   }
 }
 
 // Function to process the uploaded file
-async function processFile(filePath) {
+async function processFile(filePath, username) {
+  logger.info(`User ${username} processing file: ${filePath}`);
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
@@ -51,6 +56,7 @@ async function processFile(filePath) {
   // Check if the required column name "Email ID" is present
   const emailIndex = worksheet.getRow(1).values.indexOf('Email ID');
   if (emailIndex === -1) {
+    logger.error(`User ${username} missing column: Email ID`);
     return { error: 'Missing column: Email ID' };
   }
 
@@ -61,32 +67,40 @@ async function processFile(filePath) {
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
     const email = normalizeString(row.getCell(emailIndex).value);
-    const matchStatus = await checkDatabase(email);
+    const matchStatus = await checkDatabase(email, username);
     row.getCell(statusColumn.number).value = matchStatus;
     row.commit();
+    logger.info(`User ${username} processed row ${i} with email ${email} - Match Status: ${matchStatus}`);
   }
 
   const newFilePath = "Updated-" + Date.now() + ".xlsx";
   await workbook.xlsx.writeFile(newFilePath);
+  logger.info(`User ${username} file processed successfully. New file created: ${newFilePath}`);
   return newFilePath;
 }
 
 exports.uploadFile = async (req, res) => {
-    if (!req.file) {
-      return res.status(400).send("No file uploaded.");
+  const username = req.session.username || 'unknown'; // Default to 'unknown' if no username in session
+
+  if (!req.file) {
+    logger.warn(`User ${username} no file uploaded.`);
+    return res.status(400).send("No file uploaded.");
+  }
+
+  const filePath = req.file.path;
+  try {
+    const result = await processFile(filePath, username);
+    if (result.error) {
+      logger.error(`User ${username} file processing error: ${result.error}`);
+      return res.status(400).send(result.error);
     }
-  
-    const filePath = req.file.path;
-    try {
-      const result = await processFile(filePath);
-      if (result.error) {
-        return res.status(400).send(result.error);
-      }
-      res.download(result);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("An error occurred while processing the file.");
-    } finally {
-      fs.unlinkSync(filePath);
-    }
-  };
+    logger.info(`User ${username} file download initiated: ${result}`);
+    res.download(result);
+  } catch (error) {
+    logger.error(`User ${username} error while processing file: ${error.message}`);
+    res.status(500).send("An error occurred while processing the file.");
+  } finally {
+    fs.unlinkSync(filePath);
+    logger.info(`User ${username} temporary file deleted: ${filePath}`);
+  }
+};

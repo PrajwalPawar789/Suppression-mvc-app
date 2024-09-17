@@ -95,6 +95,20 @@
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
+
+        <h2>Insert Invalidemail Suppression Records / Update</h2>
+<p>Download a sample Excel file for reference: <a href="/download/sample-invalidemailaddress.xlsx" download>Download Sample Excel</a></p>
+<form action="/invalidemailController1" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="invalidEmailFile">Excel File</label>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="invalidEmailFile" name="file" required>
+            <label class="custom-file-label" for="invalidEmailFile">Choose file</label>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
     </div>
 
     <script>
