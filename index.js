@@ -4,8 +4,14 @@ const bodyParser = require('body-parser');
 const session = require('express-session'); // Add this line
 const fileRoutes = require('./routes/fileRoutes');
 const path = require('path');
+const cors = require('cors'); // Import CORS middleware
 
 const app = express();
+
+
+app.use(cors({
+  origin: 'http://localhost:3001'
+}));
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));

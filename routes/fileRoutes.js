@@ -10,7 +10,7 @@ const loginController = require('../controllers/loginController'); // Add this l
 const invalidemailController = require('../controllers/invalidemail');
 const globalemailsuppression = require('../controllers/globalemailsuppression');
 const dncsuppression = require('../controllers/dncsuppression');
-const datafordashboard = require('../controllers/datafordashboard');
+const reportController = require('../controllers/reportController');
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -102,6 +102,8 @@ router.get('/logout', (req, res) => {
     res.render('dncsuppression');
   });
 
+  router.get('/report', isAuthenticated, reportController.getReportData);
+
 
 router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
 router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);
@@ -109,7 +111,6 @@ router.post('/process', isAuthenticated, fileController.upload.single('excelFile
 
 router.post('/checkemail', isAuthenticated, checkemailController.checkEmail);
 router.post('/login', loginController.login); // Define the new route for login
-router.post('/datafordashboard', datafordashboard.datafordashboard)
 router.post('/invalidemailprocess', isAuthenticated, upload.single('file'), invalidemailController.uploadFile);
 router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), globalemailsuppression.uploadFile);
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
