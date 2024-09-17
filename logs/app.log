@@ -158,3 +158,6 @@
 2024-07-17T19:49:21.843Z [info]: Transaction committed.
 2024-07-17T19:49:21.844Z [info]: Database connection released.
 2024-07-17T19:49:21.844Z [info]: Result: [{"match_status":"Unmatch","email_status":"unmatch","client_code_status":"Unmatch","linkedin_link_status":"unmatch","data_found_status":"Data not found in suppression"}]
+2024-09-17T18:22:11.082Z [info]: Total rows (including header): 47
+2024-09-17T18:22:11.085Z [info]: Processing 46 rows of data.
+2024-09-17T18:22:11.086Z [warn]: Missing required headers: date_, month_, campaign_id, client, end_client_name, campaign_name, first_name, last_name, company_name, country, phone, email, linkedin_link, job_title, employee_size, asset, delivery_spoc, left_3, left_4, call_disposition, bcl_ops_tl_name, response_date

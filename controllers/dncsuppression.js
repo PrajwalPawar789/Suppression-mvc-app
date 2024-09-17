@@ -22,7 +22,6 @@ const normalizeString = (str) => {
   return str.trim();
 };
 
-// Function to check the database for a match based on email, company name, and domain
 async function checkDatabase(email, companyName, domain) {
   const client = await pool.connect();
   try {
@@ -32,18 +31,36 @@ async function checkDatabase(email, companyName, domain) {
           SELECT 1 FROM public.dnc_suppression WHERE email_address = $1
         ) THEN 'Match' ELSE 'Unmatch' END AS email_status,
         CASE WHEN EXISTS (
-          SELECT 1 FROM public.dnc_company WHERE dnc_company_name = $2
+          SELECT 1 FROM public.dnc_suppression WHERE company_name = $2
         ) THEN 'Match' ELSE 'Unmatch' END AS company_status,
         CASE WHEN EXISTS (
+          SELECT 1 FROM public.dnc_suppression WHERE company_domain = $3
+        ) THEN 'Match' ELSE 'Unmatch' END AS domain_status,
+        CASE WHEN EXISTS (
+          SELECT 1 FROM public.dnc_company WHERE dnc_company_name = $2
+        ) THEN 'Match' ELSE 'Unmatch' END AS dnc_company_status,
+        CASE WHEN EXISTS (
           SELECT 1 FROM public.dnc_company WHERE domain = $3
-        ) THEN 'Match' ELSE 'Unmatch' END AS domain_status;
+        ) THEN 'Match' ELSE 'Unmatch' END AS dnc_domain_status;
     `;
     const result = await client.query(query, [email, companyName, domain]);
     const row = result.rows[0];
-    return row ? row : { email_status: 'Unmatch', company_status: 'Unmatch', domain_status: 'Unmatch' };
+    return row ? row : { 
+      email_status: 'Unmatch', 
+      company_status: 'Unmatch', 
+      domain_status: 'Unmatch',
+      dnc_company_status: 'Unmatch',
+      dnc_domain_status: 'Unmatch' 
+    };
   } catch (error) {
     console.error("Database query error:", error);
-    return { email_status: 'Error', company_status: 'Error', domain_status: 'Error' };
+    return { 
+      email_status: 'Error', 
+      company_status: 'Error', 
+      domain_status: 'Error',
+      dnc_company_status: 'Error',
+      dnc_domain_status: 'Error' 
+    };
   } finally {
     client.release();
   }
@@ -63,23 +80,33 @@ async function processFile(filePath) {
     return { error: 'Missing required columns: Email ID, Company Name, or Domain' };
   }
 
-  // Add the "Match Status", "Company Status", and "Domain Status" columns
+  // Add new columns for the status checks
   const statusColumn = worksheet.getColumn(worksheet.columnCount + 1);
-  statusColumn.header = 'Match Status';
+  statusColumn.header = 'Email Status';
   const companyStatusColumn = worksheet.getColumn(worksheet.columnCount + 2);
   companyStatusColumn.header = 'Company Status';
   const domainStatusColumn = worksheet.getColumn(worksheet.columnCount + 3);
   domainStatusColumn.header = 'Domain Status';
+  const dncCompanyStatusColumn = worksheet.getColumn(worksheet.columnCount + 4);
+  dncCompanyStatusColumn.header = 'DNC Company Status';
+  const dncDomainStatusColumn = worksheet.getColumn(worksheet.columnCount + 5);
+  dncDomainStatusColumn.header = 'DNC Domain Status';
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
     const email = normalizeString(row.getCell(emailIndex).value);
     const companyName = normalizeString(row.getCell(companyNameIndex).value);
     const domain = normalizeString(row.getCell(domainIndex).value);
-    const { email_status, company_status, domain_status } = await checkDatabase(email, companyName, domain);
+    
+    // Fetch status from the database
+    const { email_status, company_status, domain_status, dnc_company_status, dnc_domain_status } = await checkDatabase(email, companyName, domain);
+    
+    // Set the status in the new columns
     row.getCell(statusColumn.number).value = email_status;
     row.getCell(companyStatusColumn.number).value = company_status;
     row.getCell(domainStatusColumn.number).value = domain_status;
+    row.getCell(dncCompanyStatusColumn.number).value = dnc_company_status;
+    row.getCell(dncDomainStatusColumn.number).value = dnc_domain_status;
     row.commit();
   }
 
