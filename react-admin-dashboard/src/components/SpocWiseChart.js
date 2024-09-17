@@ -9,7 +9,7 @@ const SpocWiseChart = ({ data }) => {
     labels: Object.keys(data),
     datasets: [
       {
-        label: 'Leads Suppressed Delivery SPoC Wise',
+        label: 'Leads Suppressed Delivery Client Wise',
         data: Object.values(data),
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)', 
