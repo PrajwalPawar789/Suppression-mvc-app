@@ -5,13 +5,15 @@ import SpocWiseChart from './SpocWiseChart';
 import DispositionWiseChart from './DispositionWiseChart';
 import { CSVLink } from 'react-csv';
 import { PDFDownloadLink, Document, Page, Text, View } from '@react-pdf/renderer';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 // Example PDF document component
-const MyDocument = ({ data }) => (
+const MyDocument = ({ totalLeads }) => (
   <Document>
     <Page size="A4">
-      <View>
-        <Text>Total Leads: {data.totalLeads}</Text>
+      <View style={{ padding: 30 }}>
+        <Text>Total Leads: {totalLeads}</Text>
       </View>
     </Page>
   </Document>
@@ -22,17 +24,20 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState({ startDate: '', endDate: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [selectedDate, setSelectedDate] = useState(null); // New state for selected date
 
-  const fetchData = async () => {
+  const fetchData = async (diffDays) => {
     try {
-      const response = await axios.get('http://localhost:3000/report');
+      const response = await axios.get(`http://localhost:3032/report?diffDays=${diffDays}`);
       if (Array.isArray(response.data)) {
         const formattedData = response.data.map(item => ({
           ...item,
           total_records: parseInt(item.total_records, 10),
         }));
         setData(formattedData);
-        console.log(formattedData)
       } else {
         setError('Unexpected data format received from server.');
       }
@@ -44,11 +49,16 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const diffDays = selectedDate ? Math.ceil((new Date() - selectedDate) / (1000 * 60 * 60 * 24)) - 1 : 0; // Add +1 day
+    fetchData(diffDays);
+  }, [selectedDate]); // Dependency on selectedDate
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  if (loading) return <div className="text-white">Loading...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   const totalLeads = data.reduce((acc, curr) => acc + curr.total_records, 0);
 
@@ -61,15 +71,7 @@ const Dashboard = () => {
 
   const clientWise = getCounts('client');
   const spocWise = getCounts('delivery_spoc');
-  const campaignWise = getCounts('campaign_name');
-  const bcl_ops_tl_name = getCounts('bcl_ops_tl_name');
-
-  console.log(bcl_ops_tl_name)
-  const spocCampaignWise = data.reduce((acc, curr) => {
-    const key = `${curr.delivery_spoc} - ${curr.campaign_name}`;
-    acc[key] = (acc[key] || 0) + curr.total_records;
-    return acc;
-  }, {});
+  const campaignWise = getCounts('campaign_id');
   const dispositionWise = getCounts('call_disposition');
 
   // Handle filter logic
@@ -83,106 +85,146 @@ const Dashboard = () => {
 
   const totalFilteredLeads = filteredData.reduce((acc, curr) => acc + curr.total_records, 0);
 
+  // Filter the campaign data based on search term
+  const filteredCampaignWise = Object.entries(campaignWise).filter(([campaign]) =>
+    campaign.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCampaignWise.length / itemsPerPage);
+
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredCampaignWise.slice(startIndex, endIndex);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    if (totalPages > 1) {
+      pages.push(
+        <button key="first" onClick={() => handlePageChange(1)} disabled={currentPage === 1} className="px-4 py-2 mx-1 bg-gray-700 text-white rounded-md">First</button>
+      );
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          pages.push(
+            <button key={i} onClick={() => handlePageChange(i)} className={`px-4 py-2 mx-1 ${currentPage === i ? 'bg-indigo-600' : 'bg-gray-700'} text-white rounded-md`}>
+              {i}
+            </button>
+          );
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          pages.push(<span key={`dots-${i}`} className="px-4 py-2 mx-1 text-gray-500">...</span>);
+        }
+      }
+      pages.push(
+        <button key="last" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} className="px-4 py-2 mx-1 bg-gray-700 text-white rounded-md">Last</button>
+      );
+    }
+    return <div className="flex justify-center mt-4">{pages}</div>;
+  };
+
   return (
     <div className="p-6 bg-gray-900 min-h-screen">
       <h1 className="text-4xl font-extrabold text-white mb-8 animate-fadeIn">
         <span className="text-indigo-500">Dashboard</span>
       </h1>
 
-      {/* <div className="mb-6 flex items-center gap-6">
-        <input
-          type="date"
-          className="p-4 rounded-lg border border-gray-600 bg-gray-800 text-white placeholder-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105"
-          value={filter.startDate}
-          onChange={(e) => setFilter(prev => ({ ...prev, startDate: e.target.value }))}
-          placeholder="Start Date"
+      {/* Date Picker Section */}
+      <div className="mb-6">
+        <DatePicker
+          selected={selectedDate}
+          onChange={handleDateChange}
+          dateFormat="MMMM d, yyyy"
+          maxDate={new Date()} // Restrict selection to today or earlier
+          className="p-2 rounded-md border border-gray-500 bg-gray-900 text-white"
+          placeholderText="Select a date"
         />
-        <input
-          type="date"
-          className="p-4 rounded-lg border border-gray-600 bg-gray-800 text-white placeholder-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105"
-          value={filter.endDate}
-          onChange={(e) => setFilter(prev => ({ ...prev, endDate: e.target.value }))}
-          placeholder="End Date"
-        />
-        <button
-          className="bg-gradient-to-r from-indigo-500 to-indigo-700 text-white px-6 py-3 rounded-lg shadow-xl hover:from-indigo-600 hover:to-indigo-800 transition-all duration-300 ease-in-out transform hover:scale-105"
-          onClick={() => fetchData()}
-        >
-          Apply Filter
-        </button>
-      </div> */}
+        {selectedDate && (
+          <div className="text-white mt-2">
+            Selected Date: {selectedDate.toLocaleDateString()}
+          </div>
+        )}
+      </div>
 
       <div className="mb-6 flex gap-6">
         <CSVLink
           data={data}
           filename={"dashboard-data.csv"}
-          className="bg-gradient-to-r from-green-500 to-green-700 text-white px-6 py-3 rounded-lg shadow-xl hover:from-green-600 hover:to-green-800 transition-all duration-300 ease-in-out transform hover:scale-105"
+          className="bg-gradient-to-r from-green-500 to-green-700 text-white px-6 py-3 rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 transition-all duration-300 ease-in-out transform hover:scale-105"
         >
           Export to CSV
         </CSVLink>
         <PDFDownloadLink
-          document={<MyDocument data={{ totalLeads: totalFilteredLeads }} />}
+          document={<MyDocument totalLeads={totalFilteredLeads} />}
           fileName="dashboard-data.pdf"
-          className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-lg shadow-xl hover:from-blue-600 hover:to-blue-800 transition-all duration-300 ease-in-out transform hover:scale-105"
+          className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-3 rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-800 transition-all duration-300 ease-in-out transform hover:scale-105"
         >
           {({ loading }) => (loading ? 'Loading document...' : 'Export to PDF')}
         </PDFDownloadLink>
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-8">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-6 md:p-8">
           <h2 className="text-xl font-semibold text-white mb-4">Total Leads Suppressed</h2>
           <p className="text-4xl font-bold text-white">{totalFilteredLeads}</p>
         </div>
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-8">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-6 md:p-8">
           <h2 className="text-xl font-semibold text-white mb-4">Date Suppressed</h2>
           <p className="text-4xl font-bold text-white">{data[0]?.date_ || 'N/A'}</p>
         </div>
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-8">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg rounded-lg p-6 md:p-8">
           <h2 className="text-xl font-semibold text-white mb-4">Total Campaigns</h2>
           <p className="text-4xl font-bold text-white">{Object.keys(campaignWise).length}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-gray-800 shadow-lg rounded-lg p-8 transform transition hover:scale-105 duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        <div className="bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 transform transition hover:scale-105 duration-300">
           <h2 className="text-xl font-semibold text-white mb-4">Leads Suppressed Delivery SPoC Wise</h2>
           <ClientWiseChart data={spocWise} />
         </div>
 
-        <div className="bg-gray-800 shadow-lg rounded-lg p-8 transform transition hover:scale-105 duration-300">
+        <div className="bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 transform transition hover:scale-105 duration-300">
           <h2 className="text-xl font-semibold text-white mb-4">Leads Suppressed Client Wise</h2>
           <SpocWiseChart data={clientWise} />
         </div>
 
-        <div className="bg-gray-800 shadow-lg rounded-lg p-8 transform transition hover:scale-105 duration-300">
+        <div className="bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 transform transition hover:scale-105 duration-300">
           <h2 className="text-xl font-semibold text-white mb-4">Leads by Call Disposition</h2>
           <DispositionWiseChart data={dispositionWise} />
         </div>
+      </div>
 
-        <div className="bg-gray-800 shadow-lg rounded-lg p-8 transform transition hover:scale-105 duration-300 overflow-y-auto">
-          <h2 className="text-xl font-semibold text-white mb-4">Leads Suppressed Campaign Name Wise</h2>
-          <ul className="text-white">
-            {Object.entries(campaignWise).map(([campaign, count]) => (
-              <li key={campaign} className="flex justify-between mb-2">
-                <span>{campaign}</span>
-                <span>{count}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 mt-8 overflow-y-auto">
+        <h2 className="text-xl font-semibold text-white mb-4">Leads Suppressed Campaign Name Wise</h2>
+
+        {/* Search box */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search campaigns..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 rounded-md border border-gray-500 bg-gray-900 text-white"
+          />
         </div>
 
-        <div className="bg-gray-800 shadow-lg rounded-lg p-8 transform transition hover:scale-105 duration-300 overflow-y-auto">
-          <h2 className="text-xl font-semibold text-white mb-4">SPoC for Each Campaign</h2>
-          <ul className="text-white">
-            {Object.entries(spocCampaignWise).map(([key, count]) => (
-              <li key={key} className="flex justify-between mb-2">
-                <span>{key}</span>
-                <span>{count}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Paginated Campaign List */}
+        <ul className="text-white">
+          {getPaginatedData().map(([campaign, count]) => (
+            <li key={campaign} className="flex justify-between mb-2 border-b border-gray-700 pb-2">
+              <span>{campaign}</span>
+              <span>{count}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Pagination Controls */}
+        {renderPagination()}
       </div>
     </div>
   );

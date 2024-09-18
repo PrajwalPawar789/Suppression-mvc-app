@@ -3,7 +3,7 @@ const cors = require('cors'); // To handle CORS issues
 const reportController = require('./controllers/reportController');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3032;
 
 // Middleware
 app.use(cors()); // Allow requests from your React app
