@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, registerables } from 'chart.js';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, ...registerables);
 
 const SpocWiseChart = ({ data }) => {
   const chartData = {
@@ -55,6 +55,13 @@ const SpocWiseChart = ({ data }) => {
         backgroundColor: 'rgba(0, 0, 0, 0.8)', // Tooltip background color
         titleColor: '#ffffff', // Tooltip title text color
         bodyColor: '#ffffff', // Tooltip body text color
+      },
+      // Custom plugin to show counts inside the pie sections
+      datalabels: {
+        color: '#ffffff',
+        formatter: (value, context) => {
+          return value; // Show the count value inside the pie sections
+        },
       },
     },
     borderWidth: 1,

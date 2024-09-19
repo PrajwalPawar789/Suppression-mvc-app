@@ -264,3 +264,71 @@
 2024-09-17T22:26:56.926Z [info]: Successful login for username: prajwal
 2024-09-18T13:41:17.045Z [info]: Login attempt for username: prajwal
 2024-09-18T13:41:17.273Z [info]: Successful login for username: prajwal
+2024-09-19T15:06:22.059Z [info]: Login attempt for username: prajwal
+2024-09-19T15:06:22.164Z [info]: Successful login for username: prajwal
+2024-09-19T15:06:54.133Z [info]: prajwal - Processing file: uploads\93c1723b3f90f92a90cdd37312e0a7f6
+2024-09-19T15:06:54.379Z [info]: prajwal - File processed successfully. New file created: Updated-1726758414327.xlsx
+2024-09-19T15:06:54.381Z [info]: prajwal - File download initiated: Updated-1726758414327.xlsx
+2024-09-19T15:06:54.384Z [info]: prajwal - Temporary file deleted: uploads\93c1723b3f90f92a90cdd37312e0a7f6
+2024-09-19T15:34:05.181Z [info]: Login attempt for username: prajwal
+2024-09-19T15:34:05.269Z [info]: Successful login for username: prajwal
+2024-09-19T15:35:43.219Z [info]: Login attempt for username: prajwal
+2024-09-19T15:35:43.306Z [info]: Successful login for username: prajwal
+2024-09-19T15:35:48.236Z [info]:  prajwal Inserted Global email address: prajwal.pawar@gmail.com
+2024-09-19T15:35:48.238Z [info]:  prajwal Inserted Global email address: prajwal_pawar@gmail.com
+2024-09-19T15:35:48.239Z [info]: prajwal Database connection released.
+2024-09-19T15:37:09.924Z [info]:  prajwal Inserted invalid email address: prajwal.pawar@gmail.com
+2024-09-19T15:37:09.926Z [info]:  prajwal Inserted invalid email address: prajwal_pawar@gmail.com
+2024-09-19T15:37:09.927Z [info]: prajwal Database connection released.
+2024-09-19T15:37:17.655Z [info]:  prajwal Inserted Global email address: prajwal.pawar@gmail.com
+2024-09-19T15:37:17.657Z [info]:  prajwal Inserted Global email address: prajwal_pawar@gmail.com
+2024-09-19T15:37:17.658Z [info]: prajwal Database connection released.
+2024-09-19T16:22:12.452Z [info]: Login attempt for username: prajwal
+2024-09-19T16:22:12.532Z [info]: Successful login for username: prajwal
+2024-09-19T17:06:07.943Z [info]: Login attempt for username: prajwal
+2024-09-19T17:06:08.025Z [info]: Successful login for username: prajwal
+2024-09-19T17:21:56.033Z [info]: Login attempt for username: prajwal
+2024-09-19T17:21:56.119Z [info]: Successful login for username: prajwal
+2024-09-19T17:31:30.461Z [info]: Login attempt for username: prajwal
+2024-09-19T17:31:30.557Z [info]: Successful login for username: prajwal
+2024-09-19T17:40:33.486Z [info]: Login attempt for username: prajwal
+2024-09-19T17:40:33.591Z [info]: Successful login for username: prajwal
+2024-09-19T17:40:39.686Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:40:39.771Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:40:39.773Z [info]: prajwal Database connection released.
+2024-09-19T17:49:06.700Z [info]: Login attempt for username: prajwal
+2024-09-19T17:49:06.790Z [info]: Successful login for username: prajwal
+2024-09-19T17:51:06.294Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:51:06.295Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:51:06.296Z [info]: prajwal Database connection released.
+2024-09-19T17:52:11.994Z [info]: Login attempt for username: prajwal
+2024-09-19T17:52:12.092Z [info]: Successful login for username: prajwal
+2024-09-19T17:52:18.135Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:52:18.136Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:52:18.137Z [info]: prajwal Database connection released.
+2024-09-19T17:53:30.585Z [info]: Login attempt for username: prajwal
+2024-09-19T17:53:30.670Z [info]: Successful login for username: prajwal
+2024-09-19T17:53:42.276Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:53:42.277Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:53:42.279Z [info]: prajwal Database connection released.
+2024-09-19T17:55:08.385Z [info]: Login attempt for username: prajwal
+2024-09-19T17:55:08.469Z [info]: Successful login for username: prajwal
+2024-09-19T17:55:14.098Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:55:14.100Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:55:14.102Z [info]: prajwal Database connection released.
+2024-09-19T17:55:56.793Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:55:56.872Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:55:56.874Z [info]: prajwal Database connection released.
+2024-09-19T17:57:41.373Z [info]: Login attempt for username: prajwal
+2024-09-19T17:57:41.462Z [info]: Successful login for username: prajwal
+2024-09-19T17:59:14.248Z [info]: Login attempt for username: prajwal
+2024-09-19T17:59:14.310Z [info]: Successful login for username: prajwal
+2024-09-19T17:59:45.518Z [info]: Login attempt for username: prajwal
+2024-09-19T17:59:45.603Z [info]: Successful login for username: prajwal
+2024-09-19T17:59:50.015Z [info]: prajwal Inserted DNC company: Manlitics
+2024-09-19T17:59:50.016Z [info]: prajwal Inserted DNC company: Googoo
+2024-09-19T17:59:50.017Z [info]: prajwal Database connection released.
+2024-09-19T18:02:27.802Z [info]: Login attempt for username: prajwal
+2024-09-19T18:02:27.888Z [info]: Successful login for username: prajwal
+2024-09-19T18:02:33.195Z [info]: prajwal Inserted DNC suppression record: pp@jlskfjlsl.ocm
+2024-09-19T18:02:33.197Z [info]: prajwal Database connection released.

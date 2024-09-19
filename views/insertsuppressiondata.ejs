@@ -26,7 +26,9 @@
 
         h2 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            font-size: 1.8rem;
         }
 
         label {
@@ -43,11 +45,6 @@
             background-color: transparent;
             color: #fff;
             font-size: 16px;
-        }
-
-        select {
-            background-color: #333;
-            color: #fff;
         }
 
         button {
@@ -78,16 +75,31 @@
         ::-webkit-file-upload-button:hover {
             background-color: #0056b3;
         }
+
+        .form-group {
+            margin-bottom: 20px; /* Reduced from 40px to 20px */
+        }
+
+        .download-link {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
     </style>
 </head>
 <body>
     <%- include('navbar') %>
     <div class="container">
-        <h2>Insert New Suppression Records / Update</h2>
-        <p>Download a sample Excel file for reference: <a href="/download/sample-insertdata.xlsx" download>Download Sample Excel</a></p>
+        <h2>Upload Suppression Records</h2>
+
+        <div class="download-link">
+            <p>Download a sample Excel file for reference: <a href="/download/sample-insertdata.xlsx" download class="text-info">Download Sample Excel</a></p>
+        </div>
+        
         <form action="/process" method="post" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="excelFile">Excel File</label>
+                <label for="excelFile">Master Excel File</label>
                 <div class="custom-file">
                     <input type="file" class="custom-file-input" id="excelFile" name="excelFile" required>
                     <label class="custom-file-label" for="excelFile">Choose file</label>
@@ -96,26 +108,83 @@
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
 
-        <h2>Insert Invalidemail Suppression Records / Update</h2>
-<p>Download a sample Excel file for reference: <a href="/download/sample-invalidemailaddress.xlsx" download>Download Sample Excel</a></p>
-<form action="/invalidemailController1" method="post" enctype="multipart/form-data">
-    <div class="form-group">
-        <label for="invalidEmailFile">Excel File</label>
-        <div class="custom-file">
-            <input type="file" class="custom-file-input" id="invalidEmailFile" name="file" required>
-            <label class="custom-file-label" for="invalidEmailFile">Choose file</label>
+        <div class="form-section">
+            <h2>Invalid Email Suppression Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-invalidemailaddress.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/invalidemailController1" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="invalidEmailFile">Invalid Email Excel File</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="invalidEmailFile" name="file" required>
+                        <label class="custom-file-label" for="invalidEmailFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
         </div>
-    </div>
-    <button type="submit" class="btn btn-primary">Upload</button>
-</form>
+
+        <div class="form-section">
+            <h2>Global Email Suppression Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-invalidemailaddress.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/globalemailprocess" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="globalEmailFile">Global Email Excel File</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="globalEmailFile" name="file" required>
+                        <label class="custom-file-label" for="globalEmailFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>DNC Company Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-dnccompany.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/dnccompany" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="dncFile">DNC Company Excel File</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="dncFile" name="dncFile" required>
+                        <label class="custom-file-label" for="dncFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>DNC Suppression Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-dnc-suppression.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/dnc-suppression" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="dncSuppressionFile">DNC Suppression Excel File</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="dncSuppressionFile" name="dncSuppressionFile" required>
+                        <label class="custom-file-label" for="dncSuppressionFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
 
     </div>
 
     <script>
-        document.querySelector('.custom-file-input').addEventListener('change', function(e) {
-            var fileName = document.getElementById("excelFile").files[0].name;
-            var nextSibling = e.target.nextElementSibling
-            nextSibling.innerText = fileName
+        document.querySelectorAll('.custom-file-input').forEach(input => {
+            input.addEventListener('change', function(e) {
+                var fileName = e.target.files[0].name;
+                var nextSibling = e.target.nextElementSibling;
+                nextSibling.innerText = fileName;
+            });
         });
     </script>
 </body>

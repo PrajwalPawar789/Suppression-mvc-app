@@ -12,6 +12,9 @@ const globalemailsuppression = require('../controllers/globalemailsuppression');
 const dncsuppression = require('../controllers/dncsuppression');
 const reportController = require('../controllers/reportController');
 const invalidemailController1 = require('../controllers/invalidemailController');
+const globalemailController = require('../controllers/globalemailController');
+const dncCompanyController = require('../controllers/dnc_companyController');
+const dncSuppressionController = require('../controllers/dnc_suppressionController');
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -23,7 +26,7 @@ const isAuthenticated = (req, res, next) => {
 };
 
 router.get('/', isAuthenticated, (req, res) => {
-  console.log(req.session.username);
+  // console.log(req.session.username);
   res.render('upload');
 });
 
@@ -114,6 +117,10 @@ router.post('/invalidemailController1', isAuthenticated, upload.single('file'), 
 router.post('/checkemail', isAuthenticated, checkemailController.checkEmail);
 router.post('/login', loginController.login); // Define the new route for login
 router.post('/invalidemailprocess', isAuthenticated, upload.single('file'), invalidemailController.uploadFile);
+router.post('/globalemailprocess', isAuthenticated, upload.single('file'), globalemailController.insertGlobalEmailData);
+router.post('/dnccompany', isAuthenticated, upload.single('dncFile'), dncCompanyController.insertDncCompanyData);
+router.post('/dnc-suppression', isAuthenticated, upload.single('dncSuppressionFile'), dncSuppressionController.insertDncSuppressionData);
+
 router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), globalemailsuppression.uploadFile);
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
 

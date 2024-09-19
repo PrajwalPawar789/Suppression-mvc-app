@@ -55,6 +55,7 @@ const DispositionWiseRadarChart = ({ data }) => {
         text: 'Leads by Call Disposition',
         color: 'white', // Color of the chart title
       },
+      
     },
   };
 

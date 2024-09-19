@@ -1,8 +1,10 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import the plugin
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+// Register the necessary components and plugin
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
 const ClientWiseChart = ({ data }) => {
   const chartData = {
@@ -29,6 +31,12 @@ const ClientWiseChart = ({ data }) => {
         display: true,
         text: 'Leads Suppressed Client Wise',
         color: 'white',
+      },
+      datalabels: {
+        color: 'white', // Text color for the data labels
+        anchor: 'end', // Position of the label in relation to the bar
+        align: 'start', // Aligns the label at the start of the bar
+        formatter: (value) => value, // Shows the data value
       },
     },
     scales: {

@@ -87,8 +87,9 @@ const Dashboard = () => {
 
   // Filter the campaign data based on search term
   const filteredCampaignWise = Object.entries(campaignWise).filter(([campaign]) =>
-    campaign.toLowerCase().includes(searchTerm.toLowerCase())
+    searchTerm ? campaign.toLowerCase().includes(searchTerm.toLowerCase()) : true
   );
+  
 
   // Pagination logic
   const totalPages = Math.ceil(filteredCampaignWise.length / itemsPerPage);
