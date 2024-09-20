@@ -332,3 +332,46 @@
 2024-09-19T18:02:27.888Z [info]: Successful login for username: prajwal
 2024-09-19T18:02:33.195Z [info]: prajwal Inserted DNC suppression record: pp@jlskfjlsl.ocm
 2024-09-19T18:02:33.197Z [info]: prajwal Database connection released.
+2024-09-19T21:39:32.452Z [info]: Login attempt for username: prajwal
+2024-09-19T21:39:32.537Z [info]: Successful login for username: prajwal
+2024-09-19T22:18:13.212Z [info]: Login attempt for username: prajwal
+2024-09-19T22:18:13.278Z [info]: Successful login for username: prajwal
+2024-09-20T20:49:58.722Z [info]: Login attempt for username: prajwal
+2024-09-20T20:49:58.838Z [info]: Successful login for username: prajwal
+2024-09-20T20:52:59.075Z [info]: prajwal - File upload request received.
+2024-09-20T20:52:59.145Z [info]: prajwal - Total rows (including header): 2
+2024-09-20T20:52:59.146Z [info]: prajwal - Processing 1 rows of data.
+2024-09-20T20:52:59.149Z [error]: prajwal - Error processing file: dateString.match is not a function
+2024-09-20T20:53:22.204Z [info]: prajwal - File upload request received.
+2024-09-20T20:53:22.232Z [info]: prajwal - Total rows (including header): 2
+2024-09-20T20:53:22.233Z [info]: prajwal - Processing 1 rows of data.
+2024-09-20T20:53:22.235Z [error]: prajwal - Error processing file: dateString.match is not a function
+2024-09-20T20:54:03.822Z [info]: Login attempt for username: prajwal
+2024-09-20T20:54:03.997Z [info]: Successful login for username: prajwal
+2024-09-20T20:54:08.204Z [info]: prajwal - File upload request received.
+2024-09-20T20:54:08.271Z [info]: prajwal - Total rows (including header): 2
+2024-09-20T20:54:08.272Z [info]: prajwal - Processing 1 rows of data.
+2024-09-20T20:54:08.273Z [info]: prajwal - Row 1 - Raw date value: Thu Aug 01 2024 05:30:00 GMT+0530 (India Standard Time), Type: object
+2024-09-20T20:54:08.273Z [info]: prajwal - Row 1 - Raw response date value: null, Type: object
+2024-09-20T20:54:08.275Z [error]: prajwal - Unexpected dateValue type: object at row 1. Uploaded date: null
+2024-09-20T20:54:08.276Z [error]: prajwal - Error processing file: Unexpected dateValue type: object at row 1. Uploaded date: null
+2024-09-20T20:54:56.848Z [info]: prajwal - File upload request received.
+2024-09-20T20:54:56.870Z [info]: prajwal - Total rows (including header): 2
+2024-09-20T20:54:56.871Z [info]: prajwal - Processing 1 rows of data.
+2024-09-20T20:54:56.871Z [info]: prajwal - Row 1 - Raw date value: Thu Aug 01 2024 05:30:00 GMT+0530 (India Standard Time), Type: object
+2024-09-20T20:54:56.872Z [info]: prajwal - Row 1 - Raw response date value: https://www.linkedin.com/in/joshua-vojkovic-50606237/, Type: string
+2024-09-20T20:54:56.873Z [error]: prajwal - Invalid date format at row 1: https://www.linkedin.com/in/joshua-vojkovic-50606237/
+2024-09-20T20:54:56.874Z [error]: prajwal - Error processing file: Invalid date format at row 1: https://www.linkedin.com/in/joshua-vojkovic-50606237/
+2024-09-20T21:14:16.257Z [info]: Login attempt for username: prajwal
+2024-09-20T21:14:16.341Z [info]: Successful login for username: prajwal
+2024-09-20T21:14:41.640Z [info]: prajwal - File upload request received.
+2024-09-20T21:14:41.702Z [info]: prajwal - Total rows (including header): 2
+2024-09-20T21:14:41.703Z [info]: prajwal - Processing 1 rows of data.
+2024-09-20T21:14:41.703Z [info]: prajwal - Row 1 - Raw date value: Thu Aug 01 2024 05:30:00 GMT+0530 (India Standard Time), Type: object
+2024-09-20T21:14:41.704Z [info]: prajwal - Row 1 - Raw response date value: null, Type: object
+2024-09-20T21:14:41.792Z [info]: prajwal - Inserted new record for row 1: email=josh.vojkovic@qantas.com.au, left3=VojQan, left4=VojkQant, client=HN36
+2024-09-20T21:14:41.794Z [info]: prajwal - Database connection released.
+2024-09-20T21:18:08.656Z [info]: Login attempt for username: prajwal.pawar
+2024-09-20T21:18:08.712Z [warn]: Failed login attempt for username: prajwal.pawar - Invalid username or password
+2024-09-20T21:18:14.919Z [info]: Login attempt for username: prajwal
+2024-09-20T21:18:14.921Z [info]: Successful login for username: prajwal

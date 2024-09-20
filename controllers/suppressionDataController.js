@@ -162,7 +162,9 @@ async function processExcel(req, res) {
                 left4: row[indexes.left4],
                 callDisposition: row[indexes.callDisposition],
                 bclOpsTlName: row[indexes.bclOpsTlName],
-                responseDate: parseDate(row[indexes.responseDate])
+                responseDate: row[indexes.responseDate] && row[indexes.responseDate].trim() !== '' 
+                              ? parseDate(row[indexes.responseDate]) 
+                              : '-' // Default to '-' if empty
             };
             return insertSuppressionData(rowData, index, username);
         }));
