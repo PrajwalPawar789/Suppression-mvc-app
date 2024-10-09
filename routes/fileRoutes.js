@@ -50,7 +50,13 @@ router.get('/insert', (req, res, next) => {
     'sahil.murkute',
     'kumar.desai',
     'om.khene',
-    'ankita.tope'
+    'ankita.tope',
+  	'Tejas.Bhausaheb',
+  	'Rushikesh.Patil',
+  	'Nikita.Tumsare',
+  	'Roshan.Lakade',
+  	'Akash.Yadav',
+  	'aryansingh.thakur'
   ];
   
   if (req.session.isAuthenticated && allowedUsernames.includes(req.session.username)) {

@@ -162,9 +162,9 @@ async function processExcel(req, res) {
                 left4: row[indexes.left4],
                 callDisposition: row[indexes.callDisposition],
                 bclOpsTlName: row[indexes.bclOpsTlName],
-                responseDate: row[indexes.responseDate] && row[indexes.responseDate].trim() !== '' 
+                responseDate: (typeof row[indexes.responseDate] === 'string' && row[indexes.responseDate].trim() !== '') 
                               ? parseDate(row[indexes.responseDate]) 
-                              : '-' // Default to '-' if empty
+                              : '-' // Default to '-' if empty or not a string
             };
             return insertSuppressionData(rowData, index, username);
         }));
@@ -180,3 +180,5 @@ module.exports = {
     processExcel,
     insertSuppressionData
 };
+
+

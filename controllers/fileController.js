@@ -2,6 +2,7 @@ const multer = require("multer");
 const fs = require("fs");
 const { Pool } = require("pg");
 const ExcelJS = require("exceljs");
+const logger = require("./logger"); // Ensure you have a logger module
 
 // PostgreSQL connection settings
 const pool = new Pool({
@@ -148,7 +149,7 @@ async function checkDatabase(
   }
 }
 
-async function processFile(filePath, clientCode, dateFilter) {
+async function processFile(username, filePath, clientCode, dateFilter) {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
@@ -168,6 +169,7 @@ async function processFile(filePath, clientCode, dateFilter) {
   if (missingColumns.length > 0) {
     return { error: `Missing columns: ${missingColumns.join(", ")}` };
   }
+const logger = require("./logger"); // Ensure you have a logger module
 
   // Proceed with processing the file
   let companyIndex,
@@ -251,6 +253,11 @@ async function processFile(filePath, clientCode, dateFilter) {
     row.getCell(linkedinLinkStatusColumn.number).value =
       dbResult.linkedinLinkStatus;
 
+// Log the lead check
+logger.info(
+  `${username} - checking lead ${i - 1}: email=${email}, left3=${left3}, left4=${left4}, client=${clientCode}`
+);
+
     row.commit();
   }
 
@@ -260,7 +267,8 @@ async function processFile(filePath, clientCode, dateFilter) {
 }
 
 // Read the Excel file, calculate left_3 and left_4, check the database, and add status
-async function processFileDynamicQuery(filePath, dateFilter) {
+async function processFileDynamicQuery(username, filePath, dateFilter) {
+
   console.log(dateFilter, 'dateFilter is ')
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
@@ -437,6 +445,11 @@ LIMIT 1;
     row.getCell(linkedinLinkStatusColumn.number).value =
       dbResult.rows[0].linkedin_link_status;
 
+ // Log the lead check
+ logger.info(
+  `${username} - checking all client excluding (HN36) lead ${i - 1}: email=${email}, left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
+);
+
     row.commit();
   }
 
@@ -446,7 +459,8 @@ LIMIT 1;
 }
 
 
-async function processFileDynamicQueryMSFT(filePath, dateFilter) {
+async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
+
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
@@ -616,6 +630,12 @@ async function processFileDynamicQueryMSFT(filePath, dateFilter) {
     row.getCell(linkedinLinkStatusColumn.number).value = dbResult.rows[0].linkedin_link_status;
     row.getCell(endClientNameStatusColumn.number).value = dbResult.rows[0].end_client_name_status;
 
+
+     // Log the lead check
+     logger.info(
+      `${username} - checking MSFT lead ${i - 1}: email=${email}, left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+    );
+
     row.commit();
   }
 
@@ -630,6 +650,8 @@ module.exports = {
   processFileDynamicQuery,
   processFileDynamicQueryMSFT,
   uploadFile: async (req, res) => {
+    const username = req.session.username || 'Anonymous'; // Get username from session
+
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
@@ -646,6 +668,7 @@ module.exports = {
       if (clientCode === "All") {
         // Execute the dynamic query
         const result = await processFileDynamicQuery(
+          username,
           req.file.path,
           dateFilter
         );
@@ -660,6 +683,7 @@ module.exports = {
       } else if (clientCode === "MSFT") {
         // Execute the dynamic query for MSFT
         const result = await processFileDynamicQueryMSFT(
+          username,
           req.file.path,
           dateFilter
         );
@@ -673,7 +697,7 @@ module.exports = {
         });
       } else {
         // Execute the normal processFile function
-        const result = await processFile(req.file.path, clientCode, dateFilter);
+        const result = await processFile(username, req.file.path, clientCode, dateFilter);
         if (result.error) {
           return res.status(400).send(result.error);
         }
