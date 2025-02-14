@@ -85,9 +85,9 @@
     <%- include('navbar') %>
 
     <div class="container">
-        <h2>Upload Excel File and Check Suppression</h2>
+        <h2>Upload Excel File and Check  Quality Qualified Suppression</h2>
         <p>Download a sample Excel file for reference: <a href="/download/sample.xlsx" download>Download Sample Excel</a></p>
-        <form action="/upload" method="post" enctype="multipart/form-data">
+        <form action="/quality-qualified" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="excelFile">Excel File</label>
                 <div class="custom-file">
@@ -99,7 +99,7 @@
                 <label for="clientCode">Client Code</label>
                 <select class="custom-select" id="clientCode" name="clientCode" required>
                     <option value="">Choose client code</option>
-                    <option value="All">All (Excluding HN36)</option>
+                    <!-- <option value="All">All (Excluding HN36)</option> -->
                     <option value="MSFT">MSFT</option>
                     <option value="TE72">TE72</option>
                     <option value="AR13">AR13</option>

@@ -6,9 +6,9 @@ const logger = require('./logger'); // Ensure you have a logger module
 // PostgreSQL connection settings
 const pool = new Pool({
   user: "postgres",
-  host: "localhost",
-  database: "supppression-db",
-  password: "root",
+  host: "158.220.121.203",
+  database: "postgres",
+  password: "P0stgr3s%098",
   port: 5432,
 });
 
@@ -30,7 +30,7 @@ async function checkDatabase(email, username) {
   try {
     const query = `
       SELECT CASE WHEN EXISTS (
-        SELECT 1 FROM public.global_email_suppression WHERE email_address = $1
+        SELECT 1 FROM public.microsoft_domain_suppression WHERE domain = $1
       ) THEN 'Match' ELSE 'Unmatch' END AS match_status;
     `;
     const result = await client.query(query, [email]);
@@ -54,10 +54,10 @@ async function processFile(filePath, username) {
   const worksheet = workbook.getWorksheet(1);
 
   // Check if the required column name "Email ID" is present
-  const emailIndex = worksheet.getRow(1).values.indexOf('Email ID');
+  const emailIndex = worksheet.getRow(1).values.indexOf('Domain');
   if (emailIndex === -1) {
-    logger.error(`User ${username} missing column: Email ID`);
-    return { error: 'Missing column: Email ID' };
+    logger.error(`User ${username} missing column: Domain`);
+    return { error: 'Missing column: Domain' };
   }
 
   // Add the "Match Status" column

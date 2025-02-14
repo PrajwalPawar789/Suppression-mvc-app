@@ -11,6 +11,7 @@ app.use(express.json());
 
 // Routes
 app.get('/report', reportController.getReportData);
+app.get('/report/lead-data', reportController.getLeadDataForDay );
 
 // Start server
 app.listen(port, () => {

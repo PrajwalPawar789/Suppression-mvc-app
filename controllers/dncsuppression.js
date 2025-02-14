@@ -125,7 +125,7 @@ async function processFile(filePath, username) {
   return newFilePath;
 }
 
-exports.uploadFile = async (req, res) => {
+uploadFile = async (req, res) => {
   const username = req.session.username || 'Anonymous'; // Fallback if username is not set
   if (!req.file) {
     logger.warn(`${username} - No file uploaded.`);
@@ -148,4 +148,11 @@ exports.uploadFile = async (req, res) => {
     fs.unlinkSync(filePath);
     logger.info(`${username} - Temporary file deleted: ${filePath}`);
   }
+};
+
+module.exports = {
+  uploadFile,
+  processFile,
+  checkDatabase, // Make sure to include this line
+  // Other exports as needed...
 };

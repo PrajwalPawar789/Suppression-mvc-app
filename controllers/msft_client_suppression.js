@@ -6,9 +6,9 @@ const logger = require('./logger'); // Ensure you have a logger module
 // PostgreSQL connection settings
 const pool = new Pool({
   user: "postgres",
-  host: "localhost",
-  database: "supppression-db",
-  password: "root",
+  host: "158.220.121.203",
+  database: "postgres",
+  password: "P0stgr3s%098",
   port: 5432,
 });
 
@@ -30,7 +30,7 @@ async function checkDatabase(email, username) {
   try {
     const query = `
       SELECT CASE WHEN EXISTS (
-        SELECT 1 FROM public.global_email_suppression WHERE email_address = $1
+        SELECT 1 FROM public.microsoft_client_suppression WHERE email = $1
       ) THEN 'Match' ELSE 'Unmatch' END AS match_status;
     `;
     const result = await client.query(query, [email]);

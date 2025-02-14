@@ -7,7 +7,7 @@ const logger = require('./logger'); // Ensure you have a logger module
 const pool = new Pool({
   user: "postgres",
   host: "localhost",
-  database: "suppression-db",
+  database: 'supppression-db',
   password: "root",
   port: 5432,
 });
@@ -50,6 +50,13 @@ async function checkDatabase(email, left3, left4, username) {
   }
 }
 
+// Helper function to generate left3 and left4 values
+const generateLeftValues = (firstName, lastName, companyName) => {
+  const left3 = `${firstName.slice(0, 3)}${lastName.slice(0, 3)}${companyName.slice(0, 3)}`;
+  const left4 = `${firstName.slice(0, 4)}${lastName.slice(0, 4)}${companyName.slice(0, 4)}`;
+  return { left3, left4 };
+};
+
 // Function to process the uploaded file
 async function processFile(filePath, username) {
   logger.info(`${username} - Processing file: ${filePath}`);
@@ -68,10 +75,11 @@ async function processFile(filePath, username) {
     return { error: 'Missing required columns' };
   }
 
-  // Add the "Match Status" columns
-  worksheet.getRow(1).getCell(worksheet.columnCount + 1).value = 'Email Match Status';
-  worksheet.getRow(1).getCell(worksheet.columnCount + 2).value = 'Left3 Match Status';
-  worksheet.getRow(1).getCell(worksheet.columnCount + 3).value = 'Left4 Match Status';
+  // Set headers for new status columns
+  const statusColumnIndex = worksheet.columnCount + 1;
+  worksheet.getRow(1).getCell(statusColumnIndex).value = 'Email Match Status';
+  worksheet.getRow(1).getCell(statusColumnIndex + 1).value = 'Left3 Match Status';
+  worksheet.getRow(1).getCell(statusColumnIndex + 2).value = 'Left4 Match Status';
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
@@ -81,17 +89,16 @@ async function processFile(filePath, username) {
     const email = normalizeString(row.getCell(emailIndex).value);
     
     // Generate left3 and left4
-    const left3 = `${firstName} ${lastName}`;
-    const left4 = companyName;
+    const { left3, left4 } = generateLeftValues(firstName, lastName, companyName);
 
     const { emailStatus, left3Status, left4Status } = await checkDatabase(email, left3, left4, username);
 
-    // Write results to the new columns
-    row.getCell(worksheet.columnCount + 1).value = emailStatus;
-    row.getCell(worksheet.columnCount + 2).value = left3Status;
-    row.getCell(worksheet.columnCount + 3).value = left4Status;
+    // Write results to the new columns in the same row
+    row.getCell(statusColumnIndex).value = emailStatus;
+    row.getCell(statusColumnIndex + 1).value = left3Status;
+    row.getCell(statusColumnIndex + 2).value = left4Status;
 
-    row.commit();
+    row.commit(); // Ensure the row is committed after writing values
     logger.info(`${username} - Processed row ${i} with email ${email} - Email Status: ${emailStatus}, Left3 Status: ${left3Status}, Left4 Status: ${left4Status}`);
   }
 

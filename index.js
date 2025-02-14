@@ -1,28 +1,46 @@
-// index.js
 const express = require('express');
-const bodyParser = require('body-parser');
-const session = require('express-session'); // Add this line
+const session = require('express-session');
 const fileRoutes = require('./routes/fileRoutes');
 const path = require('path');
-const cors = require('cors'); // Import CORS middleware
+const cors = require('cors');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'http://localhost:3001', 
+  'http://192.168.1.47', 
+  'https://crm.techresearchinfo.com',
+  'http://127.0.0.1:5500', 
+  'https://www.techresearchinfo.com'
+];
 
 app.use(cors({
-  origin: 'http://localhost:3001'
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      // Allow the request if the origin is in the allowedOrigins array
+      return callback(null, true);
+    }
+    // If the origin is not allowed, reject the request
+    callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Add allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'],  // Add allowed headers
+  credentials: true, // If you need to send cookies or authentication headers
+  preflightContinue: false // Don't manually handle preflight requests
 }));
 
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.use(session({
-  secret: 'your_secret_key', // Use a random string for the secret
+  secret: 'your_secret_key',
   resave: false,
   saveUninitialized: true
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/', fileRoutes);
 
 const port = 3000;

@@ -1,132 +1,143 @@
-<!-- views/navbar.ejs -->
 <nav class="navbar">
-    <div class="navbar-left">
-        <a href="/">
-            <img src="https://www.techresearchinfo.com/whitepaper/ManliticsLogo.png" alt="Manlitics Logo" class="navbar-logo">
-        </a>
-    </div>
-    <div class="navbar-center">
-        <a href="/" class="nav-link">Master Suppression</a>
-        <a href="/invalidemailcheck" class="nav-link">Invalidemailcheck</a>
-        <a href="/globalemailsuppression" class="nav-link">Global-email-suppression</a>
-        <a href="/dncsuppression" class="nav-link">DNC-suppression</a>
-        <div class="dropdown">
-            <a href="/insert" class="nav-link dropdown-toggle">Insert Data</a>
-            <div class="dropdown-content">
-                <!-- <a href="/Insert-invalidemailcheck" class="dropdown-item">Insert-Invalidemailcheck</a>
-                <a href="/Insert-globalemailsuppression" class="dropdown-item">Insert-Globalemailsuppression</a>
-                <a href="/Insert-dncsuppression" class="dropdown-item">Insert-Dnc-suppression</a>
-                <a href="/Insert-dnccompany" class="dropdown-item">Insert-Dnc-company</a> -->
-
-            </div>
+    <div class="navbar-content">
+        <div class="navbar-left">
+            <a href="/">
+                <img src="https://www.techresearchinfo.com/whitepaper/ManliticsLogo.png" alt="Manlitics Logo" class="navbar-logo">
+            </a>
         </div>
-        <a href="/checkemail" class="nav-link">Check Email</a>
-        <a href="/documentation" class="nav-link">Documentation</a>
-    </div>
-    <div class="navbar-right">
-        <form action="/logout" method="GET">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+        <div class="navbar-center">
+            <button class="scroll-btn" id="scroll-left">&lt;</button>
+            <div class="nav-links-container" id="nav-links-container">
+                <a href="/" class="nav-link">Master Suppression</a>
+                <a href="/quality-qualified" class="nav-link">Quality-Qualified Suppression</a>
+                <a href="/TPC&CTPS-Supression" class="nav-link">TPC & CTPS Suppression</a>
+                <a href="/DeadContact-Supression" class="nav-link">DeadContact Suppression</a>
+                <a href="/msft-suppression" class="nav-link">Microsoft Suppression</a>
+                <a href="/invalidemailcheck" class="nav-link">Invalid Email Check</a>
+                <a href="/globalemailsuppression" class="nav-link">Global Email Suppression</a>
+                <a href="/dncsuppression" class="nav-link">DNC Suppression</a>
+                <a href="/TE16_MSFT_Accept_all_domain_suppression" class="nav-link">TE16_MSFT Accept All Domain Suppression</a>
+            </div>
+            <button class="scroll-btn" id="scroll-right">&gt;</button>
+        </div>
+        <div class="navbar-right">
+            <form action="/logout" method="GET">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
     </div>
 </nav>
 
 <style>
-    .navbar {
-        background-color: #111;
-        color: #fff;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-    }
+.navbar {
+    background-color: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
 
-    .navbar-left {
-        display: flex;
-        align-items: center;
-    }
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    align-items: center;
+}
 
-    .navbar-logo {
-        height: 40px;
-        margin-right: 20px;
-    }
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
 
-    .navbar-center {
-        display: flex;
-        align-items: center;
-        flex-grow: 1;
-        justify-content: center;
-    }
+.navbar-logo {
+    height: 40px;
+}
 
-    .nav-link {
-        margin-left: 20px;
-        text-decoration: none;
-        color: #fff;
-        font-size: 16px;
-        position: relative;
-    }
+.navbar-center {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
 
-    .nav-link:hover {
-        text-decoration: underline;
-    }
+.nav-links-container {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    margin: 0 5px;
+    flex-grow: 1;
+}
 
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
+.nav-link {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+    transition: color 0.3s;
+}
 
-    .dropdown-toggle::after {
-        content: ' ▼';
-        font-size: 12px;
-        margin-left: 5px;
-        vertical-align: middle;
-    }
+.nav-link:hover {
+    color: #ddd;
+}
 
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #333;
-        min-width: 200px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
+.scroll-btn {
+    background: #222;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+    flex-shrink: 0;
+}
 
-    .dropdown-content .dropdown-item {
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        display: block;
-        white-space: nowrap;
-    }
+.scroll-btn:hover {
+    background-color: #444;
+    color: #ddd;
+}
 
-    .dropdown-content .dropdown-item:hover {
-        background-color: #575757;
-    }
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
 
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
+.logout-btn {
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
 
-    .navbar-right {
-        display: flex;
-        align-items: center;
-    }
-
-    .logout-btn {
-        padding: 8px 16px;
-        background-color: #dc3545;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        text-decoration: none;
-    }
-
-    .logout-btn:hover {
-        background-color: #c82333;
-    }
+.logout-btn:hover {
+    background-color: #c82333;
+}
 </style>
+
+<script>
+document.getElementById('scroll-left').addEventListener('click', () => {
+    const container = document.getElementById('nav-links-container');
+    container.scrollLeft -= 100; // Adjust scroll amount as needed
+});
+
+document.getElementById('scroll-right').addEventListener('click', () => {
+    const container = document.getElementById('nav-links-container');
+    container.scrollLeft += 100; // Adjust scroll amount as needed
+});
+</script>

@@ -35,6 +35,7 @@ async function insertGlobalEmailData(req, res) {
     const client = await pool.connect();
     try {
         for (const email of invalidEmails) {
+            
             const insertQuery = `INSERT INTO global_email_suppression (email_address) VALUES ($1);`;
             await client.query(insertQuery, [email]);
             logger.info(` ${req.session.username} Inserted Global email address: ${email}`);

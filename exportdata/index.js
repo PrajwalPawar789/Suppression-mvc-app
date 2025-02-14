@@ -35,6 +35,7 @@ async function exportDataToExcel(clientCode) {
 
         // Add header row with only Campaign ID and Email
         worksheet.columns = [
+            { header: 'Date', key: 'date_' },
             { header: 'Campaign ID', key: 'campaign_id' },
             { header: 'Email', key: 'email' }
         ];
@@ -52,7 +53,7 @@ async function exportDataToExcel(clientCode) {
         let totalRecords;
 
         do {
-            const query = 'SELECT campaign_id, email FROM public.campaigns WHERE client = $1 LIMIT $2 OFFSET $3';
+            const query = 'SELECT date_, campaign_id, email FROM public.campaigns WHERE client = $1 LIMIT $2 OFFSET $3';
             const result = await pool.query(query, [clientCode, limit, offset]);
             totalRecords = result.rows.length;
 
