@@ -6,13 +6,13 @@ const excelToJson = require('convert-excel-to-json');
 
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'supppression-db',
-    password: 'root',
-    port: 5432
-});
-
+    user: "postgres",
+    host: "38.242.144.246",
+    database: "postgres",
+    password: "P0stgr3s%098",
+    port: 5432,
+  });
+  
 async function insertInvalidEmailData(req, res) {
 
     console.log("loggin Req", req.session.username)

@@ -6,7 +6,7 @@ const logger = require('./logger'); // Ensure you have a logger module
 // PostgreSQL connection settings
 const pool = new Pool({
   user: "postgres",
-  host: "158.220.121.203",
+  host: "38.242.144.246",
   database: "postgres",
   password: "P0stgr3s%098",
   port: 5432,

@@ -4,12 +4,12 @@ const { format, parse, isValid } = require('date-fns');
 const logger = require('./logger'); // Ensure you have a logger module
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'supppression-db',
-    password: 'root',
-    port: 5432
-});
+    user: "postgres",
+    host: "38.242.144.246",
+    database: "postgres",
+    password: "P0stgr3s%098",
+    port: 5432,
+  });
 
 async function insertSuppressionData(rowData, index, username) {
     const client = await pool.connect();

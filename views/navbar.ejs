@@ -115,6 +115,40 @@
     align-items: center;
 }
 
+.nav-links-container {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    margin: 0 5px;
+    flex-grow: 1;
+    
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;  /* For Firefox */
+    scrollbar-color: #666 #222;  /* For Firefox */
+}
+
+/* Webkit scrollbar styling (Chrome, Safari, etc.) */
+.nav-links-container::-webkit-scrollbar {
+    height: 6px;  /* Scrollbar height */
+}
+
+.nav-links-container::-webkit-scrollbar-track {
+    background: #222;  /* Scrollbar track */
+    border-radius: 3px;
+}
+
+.nav-links-container::-webkit-scrollbar-thumb {
+    background: #666;  /* Scrollbar handle */
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.nav-links-container::-webkit-scrollbar-thumb:hover {
+    background: #888;  /* Scrollbar handle on hover */
+}
+
 .logout-btn {
     padding: 8px 16px;
     background-color: #dc3545;

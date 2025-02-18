@@ -4,9 +4,9 @@ const { Pool } = require('pg');
 // Initialize the PostgreSQL connection pool
 const pool = new Pool({
   user: "postgres",
-  host: "localhost",
-  database: "supppression-db",
-  password: "root",
+  host: "38.242.144.246",
+  database: "postgres",
+  password: "P0stgr3s%098",
   port: 5432,
 });
 

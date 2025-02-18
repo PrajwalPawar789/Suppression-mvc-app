@@ -5,12 +5,12 @@ const fs = require('fs');
 const excelToJson = require('convert-excel-to-json');
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'supppression-db',
-    password: 'root',
-    port: 5432
-});
+    user: "postgres",
+    host: "38.242.144.246",
+    database: "postgres",
+    password: "P0stgr3s%098",
+    port: 5432,
+  });
 
 async function insertDncCompanyData(req, res) {
     console.log("Logging Request", req.session.username);

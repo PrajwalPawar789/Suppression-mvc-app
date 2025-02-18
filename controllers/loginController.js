@@ -2,11 +2,11 @@ const { Pool } = require('pg');
 const logger = require('./logger');
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'supppression-db',
-  password: 'root',
-  port: 5432
+  user: "postgres",
+  host: "38.242.144.246",
+  database: "postgres",
+  password: "P0stgr3s%098",
+  port: 5432,
 });
 
 const login = async (req, res) => {
