@@ -7,9 +7,11 @@ const cors = require('cors');
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:3000', 
+  'http://localhost', 
   'http://localhost:3001', 
-  'http://192.168.1.47', 
+  'http://192.168.1.47',
+  'http://192.168.0.16',
+  'http://192.168.1.36:3000',
   'https://crm.techresearchinfo.com',
   'http://127.0.0.1:5500', 
   'https://www.techresearchinfo.com'
