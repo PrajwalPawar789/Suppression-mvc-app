@@ -106,7 +106,7 @@ filtered_campaigns AS (
             ELSE 'Unmatch'
         END AS end_client_name_status
     FROM
-        public.campaigns c
+        public.quality_qualified c
     JOIN
         data d ON c.client = d.client_code
     WHERE
@@ -480,7 +480,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
                 ELSE 'unmatch (' || c.linkedin_link || ')'
             END AS linkedin_link_status
         FROM
-            public.campaigns c
+            public.quality_qualified c
         JOIN
             data d ON c.client = ANY(d.client_codes)
         WHERE
@@ -659,7 +659,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
                   ELSE 'Unmatch'
               END AS end_client_name_status
           FROM
-              public.campaigns c
+              public.quality_qualified c
           JOIN
               data d ON c.client = d.client_code
           WHERE
@@ -775,7 +775,7 @@ async function processSingleEntry(req, res) {
                 ELSE 'Unmatch'
             END AS end_client_name_status
         FROM
-            public.campaigns c
+            public.quality_qualified c
         JOIN
             data d ON c.client = d.client_code
         WHERE
@@ -880,7 +880,7 @@ async function processSingleAllClient({ firstname, lastname, companyname, phonen
           ELSE 'unmatch (' || c.linkedin_link || ')'
         END AS linkedin_link_status
       FROM
-        public.campaigns c
+        public.quality_qualified c
       JOIN
         data d ON c.client = ANY(d.client_codes)
       WHERE

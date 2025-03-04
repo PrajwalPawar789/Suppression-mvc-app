@@ -85,9 +85,9 @@
     <%- include('navbar') %>
 
     <div class="container">
-        <h2>Upload Excel File and Check  Quality Qualified Suppression</h2>
+        <h2>Upload Excel File and Check QQ Suppression</h2>
         <p>Download a sample Excel file for reference: <a href="/download/sample.xlsx" download>Download Sample Excel</a></p>
-        <form action="/quality-qualified" method="post" enctype="multipart/form-data">
+        <form action="/upload" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="excelFile">Excel File</label>
                 <div class="custom-file">
@@ -99,7 +99,7 @@
                 <label for="clientCode">Client Code</label>
                 <select class="custom-select" id="clientCode" name="clientCode" required>
                     <option value="">Choose client code</option>
-                    <!-- <option value="All">All (Excluding HN36)</option> -->
+                    <option value="All">All (Excluding HN36)</option>
                     <option value="MSFT">MSFT</option>
                     <option value="TE72">TE72</option>
                     <option value="AR13">AR13</option>
@@ -114,7 +114,16 @@
                     <option value="UE88">UE88</option>
                 </select>
             </div>
+
             <div class="form-group">
+                <label for="end_client_name">End Client Name</label>
+                <select class="custom-select" id="end_client_name" name="end_client_name" required>
+                    <option value="">Choose End client Name</option>
+                    <option value="Not Checked">NULL</option>
+                    <option value="Robinson">Robinson</option>
+                </select>
+            </div>
+            <!-- <div class="form-group">
                 <label for="dateFilter">Date Filter</label>
                 <select class="custom-select" id="dateFilter" name="dateFilter" required>
                     <option value="">Choose date filter</option>
@@ -122,11 +131,52 @@
                     <option value="6">6 Months</option>
                     <option value="12">1 Year</option>
                 </select>
-            </div>
+            </div> -->
+            <div class="form-group">
+                <label for="dateFilter">Lead Date:</label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  id="dateFilter" 
+                  name="dateFilter" 
+                  required
+                >
+              </div>
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     </div>
 
+    <script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const dateInput = document.getElementById('dateFilter');
+      const date = new Date(dateInput.value);
+      
+      // Format date as 'DD-MM-YYYY' for server
+      const formattedDate = [
+        String(date.getDate()).padStart(2, '0'),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        date.getFullYear()
+      ].join('-');
+      
+      // Create a hidden input with the formatted date
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'dateFilter';
+      hiddenInput.value = formattedDate;
+      
+      // Replace the original date input with the formatted one
+      dateInput.removeAttribute('name');
+      this.appendChild(hiddenInput);
+      
+      // Log the formatted date for debugging
+      console.log('Submitting date:', formattedDate);
+      
+      // Submit the form
+      this.submit();
+    });
+    </script>
     <script>
         // Get the file input element and its label
         const fileInput = document.getElementById('excelFile');
