@@ -106,7 +106,7 @@ filtered_campaigns AS (
             ELSE 'Unmatch'
         END AS end_client_name_status
     FROM
-        public.campaigns c
+        public.quality_qualified c
     JOIN
         data d ON c.client = d.client_code
     WHERE
@@ -207,10 +207,10 @@ LIMIT 1;
 
 // Add this function to fileController.js
 async function checkDatabaseAPI(req, res) {
-  const { left3, left4, email, clientCode, dateFilter, linkedinLink } = req.body;
+  const { left3, left4, email, clientCode, dateFilter, linkedinLink, end_client_name } = req.body;
 
   try {
-    const result = await checkDatabase(left3, left4, email, clientCode, dateFilter, linkedinLink);
+    const result = await checkDatabase(left3, left4, email, clientCode, dateFilter, linkedinLink, end_client_name);
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error in checkDatabaseAPI:", error);
@@ -480,7 +480,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
                 ELSE 'unmatch (' || c.linkedin_link || ')'
             END AS linkedin_link_status
         FROM
-            public.campaigns c
+            public.quality_qualified c
         JOIN
             data d ON c.client = ANY(d.client_codes)
         WHERE
@@ -659,7 +659,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
                   ELSE 'Unmatch'
               END AS end_client_name_status
           FROM
-              public.campaigns c
+              public.quality_qualified c
           JOIN
               data d ON c.client = d.client_code
           WHERE
@@ -738,74 +738,75 @@ async function processSingleEntry(req, res) {
 
   const dynamicQueryMSFT = `
     WITH data AS (
-        SELECT 
-            $1 AS linkedin_link,
-            'TE16' AS client_code,
-            $2 AS left_3,
-            $3 AS left_4,
-            $4 AS email_id,
-            'MSFT' AS end_client_name_1,
-            'Microsoft' AS end_client_name_2
-    ),
-    filtered_campaigns AS (
-        SELECT
-            CASE
-                WHEN (current_date - to_date(c.date_, 'DD-Mon-YY'))::int > $5 THEN 'Suppression Cleared'
-                ELSE 'Still Suppressed'
-            END AS date_status,
-            CASE
-                WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
-                ELSE 'Unmatch'
-            END AS match_status,
-            CASE
-                WHEN c.email = d.email_id THEN 'Match'
-                ELSE 'unmatch (' || c.email || ')'
-            END AS email_status,
-            CASE
-                WHEN c.client = d.client_code THEN 'Match (' || c.client || ')'
-                ELSE 'Unmatch'
-            END AS client_code_status,
-            CASE
-                WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
-                ELSE 'unmatch (' || c.linkedin_link || ')'
-            END AS linkedin_link_status,
-            CASE
-                WHEN c.end_client_name = d.end_client_name_1 THEN 'Match (' || d.end_client_name_1 || ')'
-                WHEN c.end_client_name = d.end_client_name_2 THEN 'Match (' || d.end_client_name_2 || ')'
-                ELSE 'Unmatch'
-            END AS end_client_name_status
-        FROM
-            public.campaigns c
-        JOIN
-            data d ON c.client = d.client_code
-        WHERE
-            c.linkedin_link = d.linkedin_link
-            OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
-            OR c.email = d.email_id
-    ),
-    final_result AS (
-        SELECT * FROM filtered_campaigns
-        WHERE date_status = 'Still Suppressed'
-        UNION ALL
-        SELECT * FROM filtered_campaigns
-        WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
-            SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
-        )
-    )
-    SELECT 
-        COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
-        COALESCE(match_status, 'Unmatch') AS match_status,
-        COALESCE(email_status, 'Unmatch') AS email_status,
-        COALESCE(client_code_status, 'Unmatch') AS client_code_status,
-        COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status,
-        COALESCE(end_client_name_status, 'Unmatch') AS end_client_name_status
-    FROM (
-        SELECT * FROM final_result
-        UNION ALL
-        SELECT 'Fresh Lead GTG' AS date_status, 'Unmatch' AS match_status, 'Unmatch' AS email_status, 'Unmatch' AS client_code_status, 'Unmatch' AS linkedin_link_status, 'Unmatch' AS end_client_name_status
-        WHERE NOT EXISTS (SELECT 1 FROM final_result)
-    ) AS subquery
-    LIMIT 1;
+          SELECT 
+              $1 AS linkedin_link,
+              'TE16' AS client_code,
+              $2 AS left_3,
+              $3 AS left_4,
+              $4 AS email_id,
+              $5 AS lead_date,
+              'MSFT' AS end_client_name_1,
+              'Microsoft' AS end_client_name_2
+      ),
+      filtered_campaigns AS (
+          SELECT
+              CASE
+                  WHEN to_date(c.date_, 'DD-Mon-YY') > to_date(d.lead_date, 'DD-Mon-YY') THEN 'Still Suppressed'
+                  ELSE 'Suppression Cleared'
+              END AS date_status,
+              CASE
+                  WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                  ELSE 'Unmatch'
+              END AS match_status,
+              CASE
+                  WHEN c.email = d.email_id THEN 'Match'
+                  ELSE 'unmatch (' || c.email || ')'
+              END AS email_status,
+              CASE
+                  WHEN c.client = d.client_code THEN 'Match (' || c.client || ')'
+                  ELSE 'Unmatch'
+              END AS client_code_status,
+              CASE
+                  WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+                  ELSE 'unmatch (' || c.linkedin_link || ')'
+              END AS linkedin_link_status,
+              CASE
+                  WHEN c.end_client_name = d.end_client_name_1 THEN 'Match (' || d.end_client_name_1 || ')'
+                  WHEN c.end_client_name = d.end_client_name_2 THEN 'Match (' || d.end_client_name_2 || ')'
+                  ELSE 'Unmatch'
+              END AS end_client_name_status
+          FROM
+              public.quality_qualified c
+          JOIN
+              data d ON c.client = d.client_code
+          WHERE
+              c.linkedin_link = d.linkedin_link
+              OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+              OR c.email = d.email_id
+      ),
+      final_result AS (
+          SELECT * FROM filtered_campaigns
+          WHERE date_status = 'Still Suppressed'
+          UNION ALL
+          SELECT * FROM filtered_campaigns
+          WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
+              SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
+          )
+      )
+      SELECT 
+          COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
+          COALESCE(match_status, 'Unmatch') AS match_status,
+          COALESCE(email_status, 'Unmatch') AS email_status,
+          COALESCE(client_code_status, 'Unmatch') AS client_code_status,
+          COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status,
+          COALESCE(end_client_name_status, 'Unmatch') AS end_client_name_status
+      FROM (
+          SELECT * FROM final_result
+          UNION ALL
+          SELECT 'Fresh Lead GTG' AS date_status, 'Unmatch' AS match_status, 'Unmatch' AS email_status, 'Unmatch' AS client_code_status, 'Unmatch' AS linkedin_link_status, 'Unmatch' AS end_client_name_status
+          WHERE NOT EXISTS (SELECT 1 FROM final_result)
+      ) AS subquery
+      LIMIT 1;
   `;
 
   try {
@@ -880,7 +881,7 @@ async function processSingleAllClient({ firstname, lastname, companyname, phonen
           ELSE 'unmatch (' || c.linkedin_link || ')'
         END AS linkedin_link_status
       FROM
-        public.campaigns c
+        public.quality_qualified c
       JOIN
         data d ON c.client = ANY(d.client_codes)
       WHERE

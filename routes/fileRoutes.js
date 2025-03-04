@@ -4,6 +4,7 @@ const upload = multer({ dest: 'uploads/' });
 const express = require('express');
 const router = express.Router();
 const fileController = require('../controllers/fileController');
+const quality_qualifiedController = require('../controllers/quality-qualifiedController');
 const suppressionDataController = require('../controllers/suppressionDataController');
 const checkemailController = require('../controllers/checkemailController');
 const loginController = require('../controllers/loginController'); // Add this line
@@ -233,7 +234,10 @@ router.post('/msft_domain_suppression', async (req, res) => {
   }
 });
 
-router.post('/master-msft', fileController.processSingleEntry);
+router.post('/master-msft', fileController.processSingleEntry); 
+
+router.post('/qq-msft', quality_qualifiedController.processSingleEntry);
+
 // Express router setup
 router.post('/master-all-client', async (req, res) => {
   console.log("Request received:", req.body);
@@ -243,6 +247,10 @@ router.post('/master-all-client', async (req, res) => {
   }
   res.status(200).send(result);
 });
+
+router.post('/master-suppression', fileController.checkDatabaseAPI);
+
+router.post('/qq-suppression', quality_qualifiedController.checkDatabaseAPI);
 
 // In routes/fileRoutes.js
 router.post('/TE16-MSFT-Accept-all-domain-suppression', async (req, res) => {
