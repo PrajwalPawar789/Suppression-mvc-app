@@ -111,7 +111,7 @@ filtered_campaigns AS (
         data d ON c.client = d.client_code
     WHERE
         (c.linkedin_link = d.linkedin_link
-        OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+        OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
         OR c.email = d.email_id)
         AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'))
 ),
@@ -464,7 +464,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
                 ELSE 'Suppression Cleared'
             END AS date_status,
             CASE
-                WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
                 ELSE 'Unmatch'
             END AS match_status,
             CASE
@@ -485,7 +485,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
             data d ON c.client = ANY(d.client_codes)
         WHERE
             (c.linkedin_link = d.linkedin_link
-            OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+            OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
             OR c.email = d.email_id)
     )
     SELECT 
@@ -638,7 +638,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
                   ELSE 'Suppression Cleared'
               END AS date_status,
               CASE
-                  WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                  WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
                   ELSE 'Unmatch'
               END AS match_status,
               CASE
@@ -664,7 +664,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
               data d ON c.client = d.client_code
           WHERE
               c.linkedin_link = d.linkedin_link
-              OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+              OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
               OR c.email = d.email_id
       ),
       final_result AS (
@@ -755,7 +755,7 @@ async function processSingleEntry(req, res) {
                   ELSE 'Suppression Cleared'
               END AS date_status,
               CASE
-                  WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+                  WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
                   ELSE 'Unmatch'
               END AS match_status,
               CASE
@@ -781,7 +781,7 @@ async function processSingleEntry(req, res) {
               data d ON c.client = d.client_code
           WHERE
               c.linkedin_link = d.linkedin_link
-              OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+              OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
               OR c.email = d.email_id
       ),
       final_result AS (
@@ -865,7 +865,7 @@ async function processSingleAllClient({ firstname, lastname, companyname, phonen
           ELSE 'Still Suppressed'
         END AS date_status,
         CASE
-          WHEN c.left_3 = d.left_3 AND c.left_4 = d.left_4 THEN 'Match'
+          WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
           ELSE 'Unmatch'
         END AS match_status,
         CASE
@@ -886,7 +886,7 @@ async function processSingleAllClient({ firstname, lastname, companyname, phonen
         data d ON c.client = ANY(d.client_codes)
       WHERE
         (c.linkedin_link = d.linkedin_link
-        OR (c.left_3 = d.left_3 AND c.left_4 = d.left_4)
+        OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
         OR c.email = d.email_id)
         AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'))
     ),
