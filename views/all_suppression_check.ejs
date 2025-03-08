@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Suppression Check</title>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            background: #fff;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .suppression-checks {
+            background: #fff;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #2980b9;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">All Suppression Check At Once</h1>
+        
+        <form id="suppressionForm" action="/all-suppression-check" method="POST" enctype="multipart/form-data">
+            <div class="form-section">
+                <!-- File Upload Section -->
+                <div class="file-upload">
+                    <div class="form-group">
+                        <label>Upload Single File with Required Columns</label>
+                        <small>(First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink)</small>
+                        <input type="file" name="file" class="form-control" required 
+                               accept=".csv,.xlsx,.xls">
+                    </div>
+                </div>
+
+                <!-- Client Codes Section -->
+                <div class="form-group">
+                    <label>Client Code (Master)</label>
+                    <select name="masterClientCode" class="form-control" required>
+                        <option value="">Choose client code</option>
+                        <option value="All">All (Excluding HN36)</option>
+                        <option value="MSFT">MSFT</option>
+                        <option value="TE72">TE72</option>
+                        <option value="AR13">AR13</option>
+                        <option value="TE16">TE16</option>
+                        <option value="DI31">DI31</option>
+                        <option value="HN36">HN36</option>
+                        <option value="AD62">AD62</option>
+                        <option value="AN12">AN12</option>
+                        <option value="DY78">DY78</option>
+                        <option value="MA99">MA99</option>
+                        <option value="NT26">NT26</option>
+                        <option value="UE88">UE88</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Client Code (Quality Qualify)</label>
+                    <select name="qualityClientCode" class="form-control" required>
+                        <option value="">Choose client code</option>                        
+                        <option value="MSFT">MSFT</option>
+                        <option value="TE72">TE72</option>
+                        <option value="AR13">AR13</option>
+                        <option value="TE16">TE16</option>
+                        <option value="DI31">DI31</option>
+                        <option value="HN36">HN36</option>
+                        <option value="AD62">AD62</option>
+                        <option value="AN12">AN12</option>
+                        <option value="DY78">DY78</option>
+                        <option value="MA99">MA99</option>
+                        <option value="NT26">NT26</option>
+                        <option value="UE88">UE88</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Lead Date / Month</label>
+                    <input type="month" name="leadDate" class="form-control" required>
+                </div>
+
+                <!-- Suppression Checks Section -->
+                <div class="suppression-checks">
+                    <h3>Select Suppression Types</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="masterSuppression" id="masterSuppression">
+                            <label for="masterSuppression">Master Suppression</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="qualitySuppression" id="qualitySuppression">
+                            <label for="qualitySuppression">Quality Qualified Suppression</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="deadContact" id="deadContact">
+                            <label for="deadContact">DeadContact (Email ID, Company Name, Domain)</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="invalidemail" id="invalidemail">
+                            <label for="invalidemail">Invalid Email</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="te16Globalemail" id="te16Globalemail">
+                            <label for="te16Globalemail">TE16 Global Email</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="te16MsftDomain" id="te16MsftDomain">
+                            <label for="te16MsftDomain">TE16_MSFT_Accept_all_domain</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="msftSuppression" id="msftSuppression">
+                            <label for="msftSuppression">MSFT Suppression</label>
+                        </div>
+
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="suppressionTypes" value="tpcctpsSuppression" id="tpcctpsSuppression">
+                            <label for="tpcctpsSuppression">TPCCTPSSuppression (Phone Number)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Process Suppression Check</button>
+            </div>
+        </form>
+
+        <!-- Results Section -->
+        <div id="results" class="results-section" style="display: none;">
+            <h2>Results</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('suppressionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                const resultsDiv = document.getElementById('results');
+                const resultsContent = document.getElementById('resultsContent');
+                
+                if (result.success) {
+                    resultsContent.innerHTML = `
+                        <div class="success">
+                            <h3>Suppression Check Complete</h3>
+                            <pre>${JSON.stringify(result.results, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsContent.innerHTML = `
+                        <div class="error">
+                            <h3>Error</h3>
+                            <p>${result.error}</p>
+                        </div>
+                    `;
+                }
+                
+                resultsDiv.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
