@@ -103,6 +103,32 @@
             font-size: 14px;
             margin-top: 5px;
         }
+
+        .download-btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .download-btn:hover {
+            background: #2980b9;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        li {
+            margin: 5px 0;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -164,6 +190,7 @@
                 <div class="form-group">
                     <label>Lead Date / Month</label>
                     <input type="month" name="leadDate" class="form-control" required>
+                    
                 </div>
 
                 <!-- Suppression Checks Section -->
@@ -241,12 +268,65 @@
                 const resultsContent = document.getElementById('resultsContent');
                 
                 if (result.success) {
-                    resultsContent.innerHTML = `
-                        <div class="success">
-                            <h3>Suppression Check Complete</h3>
-                            <pre>${JSON.stringify(result.results, null, 2)}</pre>
-                        </div>
-                    `;
+                    let summaryHtml = '<div class="success">';
+                    summaryHtml += '<h3>Master Suppression Summary Report</h3>';
+                    
+                    // Add total records
+                    summaryHtml += `<p><strong>Total Records Processed:</strong> ${result.summaryReport.totalRecords}</p>`;
+                    
+                    // Add Date Status breakdown
+                    summaryHtml += '<h4>Date Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.dateStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+                    
+                    // Add Match Status breakdown
+                    summaryHtml += '<h4>Match Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.matchStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+                    
+                    // Add Email Status breakdown
+                    summaryHtml += '<h4>Email Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.emailStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+                    
+                    // Add Client Code Status breakdown
+                    summaryHtml += '<h4>Client Code Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.clientCodeStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+                    
+                    // Add LinkedIn Status breakdown
+                    summaryHtml += '<h4>LinkedIn Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.linkedInStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+                    
+                    // Add End Client Status breakdown
+                    summaryHtml += '<h4>End Client Status Breakdown:</h4>';
+                    summaryHtml += '<ul>';
+                    for (const [status, count] of Object.entries(result.summaryReport.endClientStatus)) {
+                        summaryHtml += `<li>${status}: ${count}</li>`;
+                    }
+                    summaryHtml += '</ul>';
+
+                    // Add download link
+                    summaryHtml += `<p><a href="/download/${result.outputFile}" class="download-btn">Download Results Excel</a></p>`;
+                    
+                    summaryHtml += '</div>';
+                    resultsContent.innerHTML = summaryHtml;
                 } else {
                     resultsContent.innerHTML = `
                         <div class="error">
@@ -259,6 +339,12 @@
                 resultsDiv.style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
+                document.getElementById('resultsContent').innerHTML = `
+                    <div class="error">
+                        <h3>Error</h3>
+                        <p>An error occurred while processing your request.</p>
+                    </div>
+                `;
             }
         });
     </script>

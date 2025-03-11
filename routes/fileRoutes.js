@@ -24,6 +24,10 @@ const TPCCTPSSupressionController = require('../controllers/TPCCTPSSupressionCon
 const DeadContactController = require('../controllers/DeadContactController');
 const TE16_MSFT_Accept_all_domain_suppression = require('../controllers/TE16_MSFT_Accept_all_domain_suppression');
 const linkedinLinkController = require('../controllers/linkedinLinkController'); // Import the controller
+const AllSuppressionController = require('../controllers/AllsuppressionController');
+const allSuppressionController = require('../controllers/AllsuppressionController');
+const path = require('path');
+const fs = require('fs');
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -320,5 +324,29 @@ router.post('/dnc-suppression', isAuthenticated, upload.single('dncSuppressionFi
 
 router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), globalemailsuppression.uploadFile);
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
+
+// Replace with single route definitions
+router.get('/all-suppression-check', (req, res) => {
+    res.render('all_suppression_check');
+});
+
+router.post('/all-suppression-check', upload.single('file'), allSuppressionController.processAllSuppression);
+
+// Add this route before module.exports
+router.get('/download/:filename', (req, res) => {
+    const filename = path.basename(req.params.filename);
+    const filepath = path.join(__dirname, '../uploads', filename);
+    
+    res.download(filepath, 'suppression_results.xlsx', (err) => {
+        if (err) {
+            console.error('Error downloading file:', err);
+            res.status(500).send('Error downloading file');
+        }
+        // Clean up: delete the file after sending
+        fs.unlink(filepath, (unlinkErr) => {
+            if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
+        });
+    });
+});
 
 module.exports = router;
