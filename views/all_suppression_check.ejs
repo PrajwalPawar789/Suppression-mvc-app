@@ -142,8 +142,7 @@
                     <div class="form-group">
                         <label>Upload Single File with Required Columns</label>
                         <small>(First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink)</small>
-                        <input type="file" name="file" class="form-control" required 
-                               accept=".csv,.xlsx,.xls">
+                        <input type="file" name="file" class="form-control" required accept=".csv,.xlsx,.xls">
                     </div>
                 </div>
 
@@ -239,9 +238,18 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">Process Suppression Check</button>
+                <!-- Loader -->
+                <div id="loader" style="display: none;">Loading...</div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn">Submit</button>
             </div>
         </form>
+
+        <!-- Download Button -->
+        <div id="downloadSection" style="display: none;">
+            <a id="downloadLink" href="#" class="download-btn">Download Results</a>
+        </div>
 
         <!-- Results Section -->
         <div id="results" class="results-section" style="display: none;">
@@ -251,102 +259,43 @@
     </div>
 
     <script>
-        document.getElementById('suppressionForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
+        document.getElementById('suppressionForm').onsubmit = function(event) {
+            event.preventDefault(); // Prevent default form submission
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('downloadSection').style.display = 'none'; // Hide download button initially
 
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                });
+            const formData = new FormData(this); // Create FormData object
 
-                const result = await response.json();
-                
-                const resultsDiv = document.getElementById('results');
-                const resultsContent = document.getElementById('resultsContent');
-                
-                if (result.success) {
-                    let summaryHtml = '<div class="success">';
-                    summaryHtml += '<h3>Master Suppression Summary Report</h3>';
-                    
-                    // Add total records
-                    summaryHtml += `<p><strong>Total Records Processed:</strong> ${result.summaryReport.totalRecords}</p>`;
-                    
-                    // Add Date Status breakdown
-                    summaryHtml += '<h4>Date Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.dateStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-                    
-                    // Add Match Status breakdown
-                    summaryHtml += '<h4>Match Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.matchStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-                    
-                    // Add Email Status breakdown
-                    summaryHtml += '<h4>Email Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.emailStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-                    
-                    // Add Client Code Status breakdown
-                    summaryHtml += '<h4>Client Code Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.clientCodeStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-                    
-                    // Add LinkedIn Status breakdown
-                    summaryHtml += '<h4>LinkedIn Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.linkedInStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-                    
-                    // Add End Client Status breakdown
-                    summaryHtml += '<h4>End Client Status Breakdown:</h4>';
-                    summaryHtml += '<ul>';
-                    for (const [status, count] of Object.entries(result.summaryReport.endClientStatus)) {
-                        summaryHtml += `<li>${status}: ${count}</li>`;
-                    }
-                    summaryHtml += '</ul>';
-
-                    // Add download link
-                    summaryHtml += `<p><a href="/download/${result.outputFile}" class="download-btn">Download Results Excel</a></p>`;
-                    
-                    summaryHtml += '</div>';
-                    resultsContent.innerHTML = summaryHtml;
-                } else {
-                    resultsContent.innerHTML = `
-                        <div class="error">
-                            <h3>Error</h3>
-                            <p>${result.error}</p>
-                        </div>
-                    `;
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-                
-                resultsDiv.style.display = 'block';
-            } catch (error) {
+                return response.json(); // Parse JSON response
+            })
+            .then(data => {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+
+                if (data.success) {
+                    // Show download button
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = `/uploads/${data.outputFile}`; // Adjust the path as necessary
+                    document.getElementById('downloadSection').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('resultsContent').innerHTML = `
-                    <div class="error">
-                        <h3>Error</h3>
-                        <p>An error occurred while processing your request.</p>
-                    </div>
-                `;
-            }
-        });
+                document.getElementById('loader').style.display = 'none'; // Hide loader on error
+                alert('An error occurred: ' + error.message);
+            });
+        };
     </script>
 </body>
 </html>
