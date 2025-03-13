@@ -2,300 +2,399 @@
 <html>
 <head>
     <title>All Suppression Check</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: Arial, sans-serif;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
         }
 
-        .page-title {
-            color: #2c3e50;
+        .container {
+            margin-top: 50px;
+            padding: 30px;
+            background-color: rgba(114, 70, 70, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
             text-align: center;
             margin-bottom: 30px;
+            color: #ffffff;
         }
 
-        .form-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #34495e;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .file-upload {
-            border: 2px dashed #ddd;
-            padding: 20px;
-            text-align: center;
-            background: #fff;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .custom-file-label::after {
+            content: "Browse";
+            background-color: #007bff;
+            color: #fff;
+            border-left: 1px solid #0056b3;
         }
 
         .suppression-checks {
-            background: #fff;
-            padding: 20px;
-            border-radius: 4px;
-            margin-top: 20px;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
         }
 
-        .checkbox-group {
+        .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            gap: 1rem;
         }
 
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .custom-checkbox {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .submit-btn {
-            background: #3498db;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            margin-top: 20px;
+        .custom-checkbox:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .submit-btn:hover {
-            background: #2980b9;
+        .download-sample {
+            color: #007bff;
+            text-decoration: underline;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-align: center;
         }
 
-        .results-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        select.form-control {
+            background-color: #333 !important;
+            color: #fff !important;
+            border: 1px solid #444;
         }
 
-        .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 5px;
+        input[type="month"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
         }
 
-        .download-btn {
-            display: inline-block;
-            background: #3498db;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-top: 20px;
-        }
-        
-        .download-btn:hover {
-            background: #2980b9;
-        }
-        
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        
-        li {
-            margin: 5px 0;
-            padding: 5px;
-            background: #f8f9fa;
-            border-radius: 4px;
+        #loader {
+            text-align: center;
+            color: #007bff;
+            margin: 1rem 0;
         }
     </style>
 </head>
 <body>
+    <%- include('navbar') %>
+
     <div class="container">
-        <h1 class="page-title">All Suppression Check At Once</h1>
+        <h1>All Suppression Check</h1>
         
+        <a href="/download/sample.xlsx" download class="download-sample">
+            Download Sample Excel File
+        </a>
+
         <form id="suppressionForm" action="/all-suppression-check" method="POST" enctype="multipart/form-data">
-            <div class="form-section">
-                <!-- File Upload Section -->
-                <div class="file-upload">
-                    <div class="form-group">
-                        <label>Upload Single File with Required Columns</label>
-                        <small>(First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink)</small>
-                        <input type="file" name="file" class="form-control" required accept=".csv,.xlsx,.xls">
-                    </div>
+            <!-- File Upload -->
+            <div class="form-group">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" name="file" id="excelFile" required accept=".csv,.xlsx,.xls">
+                    <label class="custom-file-label" for="excelFile">Choose Excel File</label>
                 </div>
-
-                <!-- Client Codes Section -->
-                <div class="form-group">
-                    <label>Client Code (Master)</label>
-                    <select name="masterClientCode" class="form-control" required>
-                        <option value="">Choose client code</option>
-                        <option value="All">All (Excluding HN36)</option>
-                        <option value="MSFT">MSFT</option>
-                        <option value="TE72">TE72</option>
-                        <option value="AR13">AR13</option>
-                        <option value="TE16">TE16</option>
-                        <option value="DI31">DI31</option>
-                        <option value="HN36">HN36</option>
-                        <option value="AD62">AD62</option>
-                        <option value="AN12">AN12</option>
-                        <option value="DY78">DY78</option>
-                        <option value="MA99">MA99</option>
-                        <option value="NT26">NT26</option>
-                        <option value="UE88">UE88</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Client Code (Quality Qualify)</label>
-                    <select name="qualityClientCode" class="form-control" required>
-                        <option value="">Choose client code</option>                        
-                        <option value="MSFT">MSFT</option>
-                        <option value="TE72">TE72</option>
-                        <option value="AR13">AR13</option>
-                        <option value="TE16">TE16</option>
-                        <option value="DI31">DI31</option>
-                        <option value="HN36">HN36</option>
-                        <option value="AD62">AD62</option>
-                        <option value="AN12">AN12</option>
-                        <option value="DY78">DY78</option>
-                        <option value="MA99">MA99</option>
-                        <option value="NT26">NT26</option>
-                        <option value="UE88">UE88</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Lead Date / Month</label>
-                    <input type="month" name="leadDate" class="form-control" required>
-                    
-                </div>
-
-                <!-- Suppression Checks Section -->
-                <div class="suppression-checks">
-                    <h3>Select Suppression Types</h3>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="masterSuppression" id="masterSuppression">
-                            <label for="masterSuppression">Master Suppression</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="qualitySuppression" id="qualitySuppression">
-                            <label for="qualitySuppression">Quality Qualified Suppression</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="deadContact" id="deadContact">
-                            <label for="deadContact">DeadContact (Email ID, Company Name, Domain)</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="invalidemail" id="invalidemail">
-                            <label for="invalidemail">Invalid Email</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="te16Globalemail" id="te16Globalemail">
-                            <label for="te16Globalemail">TE16 Global Email</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="te16MsftDomain" id="te16MsftDomain">
-                            <label for="te16MsftDomain">TE16_MSFT_Accept_all_domain</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="msftSuppression" id="msftSuppression">
-                            <label for="msftSuppression">MSFT Suppression</label>
-                        </div>
-
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="suppressionTypes" value="tpcctpsSuppression" id="tpcctpsSuppression">
-                            <label for="tpcctpsSuppression">TPCCTPSSuppression (Phone Number)</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Loader -->
-                <div id="loader" style="display: none;">Loading...</div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="submit-btn">Submit</button>
+                <small class="form-text text-muted">Required columns: First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink</small>
             </div>
+
+            <!-- Client Codes -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Master Client Code</label>
+                        <select class="form-control" name="masterClientCode" required>
+                            <option value="">Select Master Code</option>
+                            <option value="All">All (Excluding HN36)</option>
+                            <option value="MSFT">MSFT</option>
+                            <option value="TE72">TE72</option>
+                            <option value="AR13">AR13</option>
+                            <option value="TE16">TE16</option>
+                            <option value="DI31">DI31</option>
+                            <option value="HN36">HN36</option>
+                            <option value="AD62">AD62</option>
+                            <option value="AN12">AN12</option>
+                            <option value="DY78">DY78</option>
+                            <option value="MA99">MA99</option>
+                            <option value="NT26">NT26</option>
+                            <option value="UE88">UE88</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Quality Client Code</label>
+                        <select class="form-control" name="qualityClientCode" required>
+                            <option value="">Select Quality Code</option>
+                            <option value="MSFT">MSFT</option>
+                            <option value="TE72">TE72</option>
+                            <option value="AR13">AR13</option>
+                            <option value="TE16">TE16</option>
+                            <option value="DI31">DI31</option>
+                            <option value="HN36">HN36</option>
+                            <option value="AD62">AD62</option>
+                            <option value="AN12">AN12</option>
+                            <option value="DY78">DY78</option>
+                            <option value="MA99">MA99</option>
+                            <option value="NT26">NT26</option>
+                            <option value="UE88">UE88</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Input -->
+            <div class="form-group">
+                <label>Lead Date / Month</label>
+                <input type="month" 
+                       class="form-control" 
+                       name="leadDate" 
+                       required
+                       style="background-color: #333; color: #fff; border: 1px solid #444;">
+            </div>
+
+            <!-- Suppression Checks -->
+            <div class="suppression-checks">
+                <h4 class="mb-4">Select Suppression Types</h4>
+                <div class="checkbox-grid">
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="masterSuppression" 
+                                   id="masterSuppression">
+                            <label class="custom-control-label" for="masterSuppression">
+                                Master Suppression
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="qualitySuppression" 
+                                   id="qualitySuppression">
+                            <label class="custom-control-label" for="qualitySuppression">
+                                Quality Qualified Suppression
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="deadContact" 
+                                   id="deadContact">
+                            <label class="custom-control-label" for="deadContact">
+                                DeadContact (Email, Company, Domain)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="invalidemail" 
+                                   id="invalidemail">
+                            <label class="custom-control-label" for="invalidemail">
+                                Invalid Email Check
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="te16Globalemail" 
+                                   id="te16Globalemail">
+                            <label class="custom-control-label" for="te16Globalemail">
+                                TE16 Global Email
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="te16MsftDomain" 
+                                   id="te16MsftDomain">
+                            <label class="custom-control-label" for="te16MsftDomain">
+                                TE16 MSFT Accept-all Domain
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="msftSuppression" 
+                                   id="msftSuppression">
+                            <label class="custom-control-label" for="msftSuppression">
+                                MSFT Suppression
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="custom-checkbox">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" 
+                                   name="suppressionTypes" value="tpcctpsSuppression" 
+                                   id="tpcctpsSuppression">
+                            <label class="custom-control-label" for="tpcctpsSuppression">
+                                TPCCTPS Suppression (Phone)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Processing your file...</p>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
+                Run Suppression Checks
+            </button>
         </form>
 
-        <!-- Download Button -->
-        <div id="downloadSection" style="display: none;">
-            <a id="downloadLink" href="#" class="download-btn">Download Results</a>
-        </div>
-
         <!-- Results Section -->
-        <div id="results" class="results-section" style="display: none;">
-            <h2>Results</h2>
-            <div id="resultsContent"></div>
+        <div id="results" class="mt-5" style="display: none;">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h3 class="card-title">Results</h3>
+                    <div id="downloadSection" style="display: none;">
+                        <a id="downloadLink" href="#" class="btn btn-success mb-3">
+                            <i class="fas fa-download"></i> Download Results
+                        </a>
+                    </div>
+                    <div id="resultsContent"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('suppressionForm').onsubmit = function(event) {
-            event.preventDefault(); // Prevent default form submission
-            // Show loader
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('downloadSection').style.display = 'none'; // Hide download button initially
+    // File Input Handling
+    document.getElementById('excelFile').addEventListener('change', function(e) {
+        const fileName = e.target.files[0].name;
+        document.querySelector('.custom-file-label').textContent = fileName;
+    });
 
-            const formData = new FormData(this); // Create FormData object
+    // Form Submission
+    document.getElementById('suppressionForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        // Show loader
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('downloadSection').style.display = 'none';
 
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('loader').style.display = 'none';
+
+            if (data.success) {
+                // Show download button
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = `/uploads/${data.outputFile}`;
+                document.getElementById('downloadSection').style.display = 'block';
+
+                // Display results
+                document.getElementById('results').style.display = 'block';
+                const resultsContent = document.getElementById('resultsContent');
+                const summaryReport = data.summaryReport;
+                
+                // Build summary display
+                let summaryHTML = `
+                    <div class="summary-header">
+                        <h3>Summary Report</h3>
+                        <div class="total-records">Total Records: ${summaryReport.totalRecords}</div>
+                    </div>
+                    <div class="suppression-grid">`;
+
+                // Add Master Suppression if present
+                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
+                    summaryHTML += `
+                        <div class="suppression-card master">
+                            <h4>Master Suppression</h4>
+                            <div class="status-grid">
+                                ${renderStatusGrid('Master', summaryReport.statusCounts)}
+                            </div>
+                        </div>`;
                 }
-                return response.json(); // Parse JSON response
-            })
-            .then(data => {
-                // Hide loader
-                document.getElementById('loader').style.display = 'none';
 
-                if (data.success) {
-                    // Show download button
-                    const downloadLink = document.getElementById('downloadLink');
-                    downloadLink.href = `/uploads/${data.outputFile}`; // Adjust the path as necessary
-                    document.getElementById('downloadSection').style.display = 'block';
-                } else {
-                    alert('Error: ' + data.error);
+                // Add Quality Suppression if present
+                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
+                    summaryHTML += `
+                        <div class="suppression-card quality">
+                            <h4>Quality Qualify Suppression</h4>
+                            <div class="status-grid">
+                                ${renderStatusGrid('Quality', summaryReport.statusCounts)}
+                            </div>
+                        </div>`;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('loader').style.display = 'none'; // Hide loader on error
-                alert('An error occurred: ' + error.message);
-            });
-        };
-    </script>
+
+                summaryHTML += `</div>`; // Close suppression-grid
+
+                resultsContent.innerHTML = summaryHTML;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loader').style.display = 'none';
+            alert('An error occurred: ' + error.message);
+        });
+
+        function renderStatusGrid(prefix, statusCounts) {
+            const statusOrder = [
+                'Match Status',
+                'Client Code Status',
+                'Date Status', 
+                'Email Status',
+                'End Client Status' // Removed LinkedIn Status
+            ];
+
+            return statusOrder.map(statusType => {
+                const fullKey = `${prefix} ${statusType}`;
+                const counts = statusCounts[fullKey] || {};
+                
+                return `
+                    <div class="status-card">
+                        <div class="status-header">${statusType}</div>
+                        <div class="status-values">
+                            ${Object.entries(counts).map(([value, count]) => `
+                                <div class="status-item">
+                                    <span class="status-value">${value.replace(`${prefix}: `, '')}</span>
+                                    <span class="status-count">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+    };
+</script>
 </body>
 </html>

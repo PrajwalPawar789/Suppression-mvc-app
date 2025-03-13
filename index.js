@@ -33,6 +33,9 @@ app.use(cors({
   preflightContinue: false // Don't manually handle preflight requests
 }));
 
+// Serve static files from the "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

@@ -1,4 +1,5 @@
-const { checkDatabaseAPI, processSingleEntry, processSingleAllClient } = require('./fileController');
+const { checkDatabaseAPI: masterCheckDatabaseAPI, processSingleEntry: masterProcessSingleEntry, processSingleAllClient } = require('./fileController');
+const { checkDatabaseAPI: qualityCheckDatabaseAPI, processSingleEntry: qualityProcessSingleEntry } = require('./quality-qualifiedController');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -7,30 +8,87 @@ const XLSX = require('xlsx');
 const uploadsDir = path.join(__dirname, '../uploads');
 !fs.existsSync(uploadsDir) && fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Process the suppression check
+// Date formatting helper
+function formatDate(inputDate) {
+    const date = new Date(inputDate);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}-${month}-${year}`;
+}
+
+// Helper function to update summary counts
+// In AllsuppressionController.js - Update the updateSummary function
+function updateSummary(type, result, summary) {
+    const statusTypes = [
+        'Match Status', 
+        'Client Code Status', 
+        'Date Status', 
+        'Email Status', 
+        'End Client Status' // Removed LinkedIn Status
+    ];
+
+    statusTypes.forEach(statusType => {
+        const fullStatusKey = `${type} ${statusType}`;
+        const statusValue = result[fullStatusKey];
+        
+        if (statusValue) {
+            if (!summary.statusCounts[fullStatusKey]) {
+                summary.statusCounts[fullStatusKey] = {};
+            }
+            summary.statusCounts[fullStatusKey][statusValue] = 
+                (summary.statusCounts[fullStatusKey][statusValue] || 0) + 1;
+        }
+    });
+}
+
 async function processAllSuppression(req, res) {
     try {
         // Validate request
-        if (!req.file || !req.body.suppressionTypes?.includes('masterSuppression')) {
-            return res.status(400).json({ 
-                success: false, 
-                error: !req.file ? 'No file uploaded' : 'Invalid suppression type' 
+        if (!req.file || !req.body.suppressionTypes?.length) {
+            return res.status(400).json({
+                success: false,
+                error: !req.file ? 'No file uploaded' : 'At least one suppression type must be selected'
             });
         }
 
-        const { masterClientCode, leadDate } = req.body;
+        const suppressionTypes = req.body.suppressionTypes;
+        const isMaster = suppressionTypes.includes('masterSuppression');
+        const isQuality = suppressionTypes.includes('qualitySuppression');
+        
+        // Validate suppression types
+        if (!isMaster && !isQuality) {
+            return res.status(400).json({ success: false, error: 'Invalid suppression type' });
+        }
+
+        // Validate and format date
+        const leadDate = req.body.leadDate;
+        if (!leadDate) {
+            return res.status(400).json({ success: false, error: 'Lead date is required' });
+        }
+        
+        const formattedDate = formatDate(leadDate + '-01'); // Add day part for parsing
+        console.log(`Formatted date: ${formattedDate}`);
+
+        // Validate client codes
+        const masterClientCode = isMaster ? req.body.masterClientCode : null;
+        const qualityClientCode = isQuality ? req.body.qualityClientCode : null;
+
+        if (isMaster && !masterClientCode) {
+            return res.status(400).json({ success: false, error: 'Master client code is required' });
+        }
+        if (isQuality && !qualityClientCode) {
+            return res.status(400).json({ success: false, error: 'Quality client code is required' });
+        }
 
         // Read Excel file
         const workbook = XLSX.read(fs.readFileSync(req.file.path), { type: 'buffer' });
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
-        // Process each row
         const results = [];
-        const summary = { totalRecords: 0, matches: 0, unmatches: 0 };
+        const summary = { totalRecords: 0, statusCounts: {} };
 
         for (const row of data) {
-            console.log('Row Data:', row); // Debug log to inspect the row data
-            // Prepare row data
             const rowData = {
                 firstname: row['First Name'],
                 lastname: row['Last Name'],
@@ -38,78 +96,114 @@ async function processAllSuppression(req, res) {
                 companyname: row['Company Name'],
                 phonenumber: row['Phone Number'],
                 linkedinlink: row['linkedinLink'],
-                dateFilter: leadDate
-            };
-            console.log('Row Data Prepared:', rowData); // Debug log to inspect prepared row data
-
-            // Get suppression result based on client code
-            let suppressionResult;
-            const mockRes = { 
-                status: function(code) { return this; },
-                json: function(data) { return data; },
-                send: function(data) { return data; }
+                dateFilter: formattedDate // Use formatted date here
             };
 
-            if (masterClientCode === 'All') {
-                suppressionResult = await processSingleAllClient(rowData);
-            } else if (masterClientCode === 'MSFT') {
-                const mockReq = {
-                    body: {
-                        ...rowData,
-                        firstname: rowData.firstname,
-                        lastname: rowData.lastname,
-                        companyname: rowData.companyname,
-                        email: rowData.emailid,
-                        phonenumber: rowData.phonenumber,
-                        dateFilter: leadDate,
-                        linkedinLink: rowData.linkedinlink,
-                        end_client_name: rowData.companyname
-                    }
+            let masterResult = {};
+            let qualityResult = {};
+            const mockRes = {
+                status: (code) => mockRes,
+                json: (data) => data,
+                send: (data) => data
+            };
+
+            // Process Master Suppression
+            if (isMaster) {
+                let suppressionResult;
+                if (masterClientCode === 'All') {
+                    suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
+                } else if (masterClientCode === 'MSFT') {
+                    const mockReq = {
+                        body: {
+                            ...rowData,
+                            email: rowData.emailid,
+                            end_client_name: rowData.companyname,
+                            dateFilter: formattedDate
+                        }
+                    };
+                    suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
+                } else {
+                    suppressionResult = await masterCheckDatabaseAPI({
+                        body: {
+                            left3: rowData.firstname?.substring(0, 3),
+                            left4: rowData.lastname?.substring(0, 4),
+                            email: rowData.emailid,
+                            clientCode: masterClientCode,
+                            dateFilter: formattedDate,
+                            end_client_name: rowData.companyname
+                        }
+                    }, mockRes);
+                }
+
+                masterResult = {
+                    'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
+                    'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+                    'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+                    'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
+                    'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+                    'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
                 };
-                console.log('Mock Request Body:', mockReq.body); // Debug log
-                suppressionResult = await processSingleEntry(mockReq, mockRes);
-            } else {
-                suppressionResult = await checkDatabaseAPI({
-                    body: {
-                        left3: rowData.firstname.substring(0, 3),
-                        left4: rowData.lastname.substring(0, 4),
-                        email: rowData.emailid,
-                        clientCode: masterClientCode,
-                        dateFilter: leadDate,
-                        linkedinLink: rowData.linkedinlink,
-                        end_client_name: rowData.companyname
-                    }
-                }, mockRes);
             }
 
-            console.log('Suppression result:', suppressionResult); // Debug log
+            // Process Quality Suppression
+            if (isQuality) {
+                let suppressionResult;
+                console.log(`Using date for query: ${formattedDate}`);
+                
+                if (qualityClientCode === 'MSFT') {
+                    const mockReq = {
+                        body: {
+                            ...rowData,
+                            email: rowData.emailid,
+                            end_client_name: rowData.companyname,
+                            dateFilter: formattedDate
+                        }
+                    };
+                    suppressionResult = await qualityProcessSingleEntry(mockReq, mockRes);
+                } else {
+                    suppressionResult = await qualityCheckDatabaseAPI({
+                        body: {
+                            email: rowData.emailid,
+                            clientCode: qualityClientCode,
+                            dateFilter: formattedDate,
+                            end_client_name: rowData.companyname
+                        }
+                    }, mockRes);
+                }
 
-            // Process result
-            const result = {
+                console.log('Row Response from Query: ', suppressionResult);
+                
+                qualityResult = {
+                    'Quality Match Status': `Quality: ${suppressionResult.matchStatus || 'Unmatch'}`,
+                    'Quality Client Code Status': `Quality: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+                    'Quality Date Status': `Quality: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+                    'Quality Email Status': `Quality: ${suppressionResult.emailStatus || 'Unmatch'}`,
+                    'Quality LinkedIn Status': `Quality: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+                    'Quality End Client Status': `Quality: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
+                };
+            }
+
+            // Combine results
+            const combinedResult = {
                 ...row,
-                'Match Status': `Lead: ${suppressionResult.matchStatus || suppressionResult.match_status || 'Unmatch'}`,
-                'Client Code Status': `Lead: ${suppressionResult.clientCodeStatus || suppressionResult.client_code_status || 'Unmatch'}`,
-                'Date Status': `Lead: ${suppressionResult.dateStatus || suppressionResult.date_status || 'Fresh Lead GTG'}`,
-                'Email Status': `Lead: ${suppressionResult.emailStatus || suppressionResult.email_status || 'Unmatch'}`,
-                'LinkedIn Status': `Lead: ${suppressionResult.linkedinLinkStatus || suppressionResult.linkedin_link_status || 'Unmatch'}`,
-                'End Client Status': `Lead: ${suppressionResult.end_client_nameStatus || suppressionResult.end_client_name_status || 'Unmatch'}`
+                ...masterResult,
+                ...qualityResult
             };
 
-            results.push(result);
+            results.push(combinedResult);
             summary.totalRecords++;
+
+            // Update summary counts
+            if (isMaster) updateSummary('Master', masterResult, summary);
+            if (isQuality) updateSummary('Quality', qualityResult, summary);
         }
 
-        // Create and save Excel file
+        // Generate Excel file
         const resultWorkbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(resultWorkbook, XLSX.utils.json_to_sheet(results), 'Results');
-        
         const outputFilename = `suppression_results_${Date.now()}.xlsx`;
         XLSX.writeFile(resultWorkbook, path.join(uploadsDir, outputFilename));
 
-        // After writing the file
-        console.log(`File created at: ${path.join(uploadsDir, outputFilename)}`);
-
-        // Send response
         res.json({
             success: true,
             summaryReport: summary,
@@ -118,9 +212,9 @@ async function processAllSuppression(req, res) {
 
     } catch (error) {
         console.error('Processing error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error.message || 'Processing error occurred' 
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Processing error occurred'
         });
     }
 }

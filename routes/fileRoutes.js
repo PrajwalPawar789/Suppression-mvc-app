@@ -326,11 +326,11 @@ router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), g
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
 
 // Replace with single route definitions
-router.get('/all-suppression-check', (req, res) => {
+router.get('/all-suppression-check', isAuthenticated, (req, res) => {
     res.render('all_suppression_check');
 });
 
-router.post('/all-suppression-check', upload.single('file'), allSuppressionController.processAllSuppression);
+router.post('/all-suppression-check',isAuthenticated, upload.single('file'), allSuppressionController.processAllSuppression);
 
 // Add this route before module.exports
 router.get('/download/:filename', (req, res) => {
