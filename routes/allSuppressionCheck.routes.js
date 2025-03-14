@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const AllSuppressionController = require('../controllers/AllSuppressionController');
+const AllSuppressionController = require('../controllers/AllsuppressionController');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({

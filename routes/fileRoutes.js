@@ -113,10 +113,10 @@ router.get('/login', (req, res) => {
   res.render('login');
 });
 
-router.get('/all_suppression_check', (req, res) => {
+// router.get('/all_suppression_check', (req, res) => {
   
-  res.render('all_suppression_check')
-})
+//   res.render('all_suppression_check')
+// })
 
 router.get('/documentation', isAuthenticated, (req, res) => { // Add this route
   res.render('documentation');
@@ -326,7 +326,7 @@ router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), g
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);
 
 // Replace with single route definitions
-router.get('/all-suppression-check', isAuthenticated, (req, res) => {
+router.get('/all_suppression_check', isAuthenticated, (req, res) => {
     res.render('all_suppression_check');
 });
 

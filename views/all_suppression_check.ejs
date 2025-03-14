@@ -83,6 +83,85 @@
             color: #007bff;
             margin: 1rem 0;
         }
+
+        /* Summary Header */
+.summary-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.summary-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.total-records {
+    font-size: 1.2rem;
+    color: #007bff;
+}
+
+/* Suppression Grid */
+.suppression-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.suppression-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suppression-card h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #007bff;
+}
+
+/* Status Grid */
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.status-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-header {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.status-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.status-value {
+    color: #ccc;
+}
+
+.status-count {
+    color: #007bff;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -158,6 +237,15 @@
                        name="leadDate" 
                        required
                        style="background-color: #333; color: #fff; border: 1px solid #444;">
+
+                       <div class="form-group">
+                        <label>End Client firstName</label>
+                        <select class="form-control" name="end_client_name" required>
+                            <option value="">Select End Client Name</option>
+                            <option value="NULL">NULL</option>
+                            <option value="Robinson">Robinson</option>
+                        </select>
+                    </div>
             </div>
 
             <!-- Suppression Checks -->
@@ -211,10 +299,10 @@
                     <div class="custom-checkbox">
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="te16Globalemail" 
-                                   id="te16Globalemail">
-                            <label class="custom-control-label" for="te16Globalemail">
-                                TE16 Global Email
+                                   name="suppressionTypes" value="globalEmailSuppression" 
+                                   id="globalEmailSuppression">
+                            <label class="custom-control-label" for="globalEmailSuppression">
+                                TE16 Global Email Suppression
                             </label>
                         </div>
                     </div>
@@ -273,12 +361,17 @@
             <div class="card bg-dark text-white">
                 <div class="card-body">
                     <h3 class="card-title">Results</h3>
-                    <div id="downloadSection" style="display: none;">
-                        <a id="downloadLink" href="#" class="btn btn-success mb-3">
-                            <i class="fas fa-download"></i> Download Results
-                        </a>
-                    </div>
-                    <div id="resultsContent"></div>
+            <div id="downloadSection" style="display: none;">
+                <a id="downloadLink" href="#" class="btn btn-success mb-3">
+                    <i class="fas fa-download"></i> Download Results
+                </a>
+            </div>
+            <div id="resultsContent">
+                <!-- Summary Report -->
+                <div class="summary-header mb-4">
+                    <h3>Summary Report</h3>
+                    <div class="total-records">Total Records: <span id="totalRecords">0</span></div>
+                </div>
                 </div>
             </div>
         </div>
@@ -354,6 +447,33 @@
                         </div>`;
                 }
 
+                // Add Global Suppression summary
+                if (summaryReport.statusCounts['Global Email Status']) {
+    summaryHTML += `
+        <div class="suppression-card global">
+            <h4>Global Email Suppression</h4>
+            <div class="status-grid">
+                ${renderGlobalStatus(summaryReport.statusCounts['Global Email Status'])}
+            </div>
+        </div>`;
+}
+
+// Add this new helper function
+function renderGlobalStatus(counts) {
+    return `
+    <div class="status-card">
+        <div class="status-header">Email Status</div>
+        <div class="status-values">
+            ${Object.entries(counts).map(([status, count]) => `
+                <div class="status-item">
+                    <span class="status-value">${status.replace('Global: ', '')}</span>
+                    <span class="status-count">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
                 summaryHTML += `</div>`; // Close suppression-grid
 
                 resultsContent.innerHTML = summaryHTML;
@@ -367,33 +487,57 @@
             alert('An error occurred: ' + error.message);
         });
 
-        function renderStatusGrid(prefix, statusCounts) {
-            const statusOrder = [
-                'Match Status',
-                'Client Code Status',
-                'Date Status', 
-                'Email Status',
-                'End Client Status' // Removed LinkedIn Status
-            ];
+        // Function to render status grid
+function renderStatusGrid(prefix, statusCounts) {
+    const statusOrder = [
+        'Match Status',
+        'Client Code Status',
+        'Date Status',
+        'Email Status',
+        'End Client Status'
+    ];
 
-            return statusOrder.map(statusType => {
-                const fullKey = `${prefix} ${statusType}`;
-                const counts = statusCounts[fullKey] || {};
-                
-                return `
-                    <div class="status-card">
-                        <div class="status-header">${statusType}</div>
-                        <div class="status-values">
-                            ${Object.entries(counts).map(([value, count]) => `
-                                <div class="status-item">
-                                    <span class="status-value">${value.replace(`${prefix}: `, '')}</span>
-                                    <span class="status-count">${count}</span>
-                                </div>
-                            `).join('')}
+    return statusOrder.map(statusType => {
+        const fullKey = `${prefix} ${statusType}`;
+        const counts = statusCounts[fullKey] || {};
+
+        return `
+            <div class="status-card">
+                <div class="status-header">${statusType}</div>
+                <div class="status-values">
+                    ${Object.entries(counts).map(([value, count]) => `
+                        <div class="status-item">
+                            <span class="status-value">${value.replace(`${prefix}: `, '')}</span>
+                            <span class="status-count">${count}</span>
                         </div>
-                    </div>`;
-            }).join('');
-        }
+                    `).join('')}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+// Update the results section with data
+function updateResults(data) {
+    const summaryReport = data.summaryReport;
+
+    // Update total records
+    document.getElementById('totalRecords').textContent = summaryReport.totalRecords;
+
+    // Render Master Suppression
+    if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
+        const masterGrid = document.getElementById('masterSuppressionGrid');
+        masterGrid.innerHTML = renderStatusGrid('Master', summaryReport.statusCounts);
+    }
+
+    // Render Quality Suppression
+    if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
+        const qualityGrid = document.getElementById('qualitySuppressionGrid');
+        qualityGrid.innerHTML = renderStatusGrid('Quality', summaryReport.statusCounts);
+    }
+
+    // Show results section
+    document.getElementById('results').style.display = 'block';
+}
     };
 </script>
 </body>

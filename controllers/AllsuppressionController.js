@@ -1,5 +1,9 @@
 const { checkDatabaseAPI: masterCheckDatabaseAPI, processSingleEntry: masterProcessSingleEntry, processSingleAllClient } = require('./fileController');
 const { checkDatabaseAPI: qualityCheckDatabaseAPI, processSingleEntry: qualityProcessSingleEntry } = require('./quality-qualifiedController');
+const { checkDatabase } = require('./globalemailsuppression'); // Add this line
+const { checkDatabase: invalidCheckDatabaseAPI } = require('./invalidemailControllerforAllSuppCheck'); // Add this line
+
+
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -55,9 +59,11 @@ async function processAllSuppression(req, res) {
         const suppressionTypes = req.body.suppressionTypes;
         const isMaster = suppressionTypes.includes('masterSuppression');
         const isQuality = suppressionTypes.includes('qualitySuppression');
-        
+        const isGlobal = suppressionTypes.includes('globalEmailSuppression'); // Check for global suppression
+        const isInvalid = suppressionTypes.includes('invalidemail'); // Check for global suppression
+
         // Validate suppression types
-        if (!isMaster && !isQuality) {
+        if (!isMaster && !isQuality && !isGlobal && !isInvalid) { // Update validation
             return res.status(400).json({ success: false, error: 'Invalid suppression type' });
         }
 
@@ -101,6 +107,9 @@ async function processAllSuppression(req, res) {
 
             let masterResult = {};
             let qualityResult = {};
+            let globalResult = {}; // Add global result
+            let invalidResult = {};
+
             const mockRes = {
                 status: (code) => mockRes,
                 json: (data) => data,
@@ -183,11 +192,45 @@ async function processAllSuppression(req, res) {
                 };
             }
 
+            // Process Global Email Suppression
+            if (isGlobal) {
+                const email = rowData.emailid;
+                try {
+                    const matchStatus = await checkDatabase(email, 'system'); // Use placeholder username
+                    globalResult = {
+                        'Global Email Status': `Global: ${matchStatus}`
+                    };
+                } catch (error) {
+                    console.error('Global suppression error:', error);
+                    globalResult = {
+                        'Global Email Status': 'Global: Error'
+                    };
+                }
+            }
+
+            // Process isInvalid Email Suppression
+            if (isInvalid) {
+                const email = rowData.emailid;
+                try {
+                    const matchStatus = await invalidCheckDatabaseAPI(email, 'system'); // Use placeholder username
+                    invalidResult = {
+                        'Invalid Email Status': `Invalid: ${matchStatus}`
+                    };
+                } catch (error) {
+                    console.error('Invalid suppression error:', error);
+                    invalidResult = {
+                        'Invalid Email Status': 'Global: Error'
+                    };
+                }
+            }
+
             // Combine results
             const combinedResult = {
                 ...row,
                 ...masterResult,
-                ...qualityResult
+                ...qualityResult,
+                ...globalResult,
+                ...invalidResult
             };
 
             results.push(combinedResult);
@@ -196,6 +239,9 @@ async function processAllSuppression(req, res) {
             // Update summary counts
             if (isMaster) updateSummary('Master', masterResult, summary);
             if (isQuality) updateSummary('Quality', qualityResult, summary);
+            if (isGlobal) updateSummary('Global', globalResult, summary); 
+            if (isInvalid) updateSummary('Quality', invalidResult, summary);
+
         }
 
         // Generate Excel file
