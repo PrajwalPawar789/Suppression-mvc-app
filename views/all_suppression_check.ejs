@@ -280,7 +280,7 @@
                                    name="suppressionTypes" value="deadContact" 
                                    id="deadContact">
                             <label class="custom-control-label" for="deadContact">
-                                DeadContact (Email, Company, Domain)
+                                DNC (Email, Company, Domain)
                             </label>
                         </div>
                     </div>
@@ -416,6 +416,8 @@
                 document.getElementById('results').style.display = 'block';
                 const resultsContent = document.getElementById('resultsContent');
                 const summaryReport = data.summaryReport;
+
+                console.log('Summary Report:', summaryReport); // Log the summary report
                 
                 // Build summary display
                 let summaryHTML = `
@@ -458,6 +460,28 @@
         </div>`;
 }
 
+// Add Global Suppression summary
+if (summaryReport.statusCounts['Invalid Email Status']) {
+    summaryHTML += `
+        <div class="suppression-card Invalid">
+            <h4>Invalid Email Suppression</h4>
+            <div class="status-grid">
+                ${renderInvalidStatus(summaryReport.statusCounts['Invalid Email Status'])}
+            </div>
+        </div>`;
+}
+
+// Add TPCCTPS Suppression summary
+if (summaryReport.statusCounts['TPCCTPS Status']) {
+    summaryHTML += `
+        <div class="suppression-card TPCCTPS">
+            <h4>TPCCTPS Suppression</h4>
+            <div class="status-grid">
+                ${renderTPCCTPSStatus(summaryReport.statusCounts['TPCCTPS Status'])}
+            </div>
+        </div>`;
+}
+
 // Add this new helper function
 function renderGlobalStatus(counts) {
     return `
@@ -467,6 +491,37 @@ function renderGlobalStatus(counts) {
             ${Object.entries(counts).map(([status, count]) => `
                 <div class="status-item">
                     <span class="status-value">${status.replace('Global: ', '')}</span>
+                    <span class="status-count">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
+function renderTPCCTPSStatus(counts) {
+    return `
+    <div class="status-card">
+        <div class="status-header">TPCCTPS Status</div>
+        <div class="status-values">
+            ${Object.entries(counts).map(([status, count]) => `
+                <div class="status-item">
+                    <span class="status-value">${status.replace('TPCCTPS: ', '')}</span>
+                    <span class="status-count">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
+// Add this new helper function
+function renderInvalidStatus(counts) {
+    return `
+    <div class="status-card">
+        <div class="status-header">Email Status</div>
+        <div class="status-values">
+            ${Object.entries(counts).map(([status, count]) => `
+                <div class="status-item">
+                    <span class="status-value">${status.replace('Invalid: ', '')}</span>
                     <span class="status-count">${count}</span>
                 </div>
             `).join('')}

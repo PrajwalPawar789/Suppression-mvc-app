@@ -4,11 +4,19 @@ const ExcelJS = require('exceljs');
 const logger = require('./logger'); // Ensure you have a logger module
 
 // PostgreSQL connection settings
+// const pool = new Pool({
+//   user: "postgres",
+//   host: "158.220.121.203",
+//   database: "postgres",
+//   password: "P0stgr3s%098",
+//   port: 5432,
+// });
+
 const pool = new Pool({
-  user: "postgres",
-  host: "158.220.121.203",
-  database: "postgres",
-  password: "P0stgr3s%098",
+  user: "root",
+  host: "192.168.1.36",
+  database: "suppression",
+  password: "Scitilnam$007",
   port: 5432,
 });
 // Helper function to normalize phone numbers
@@ -38,9 +46,6 @@ const normalizePhoneNumber = (str) => {
   return normalized;
 };
 
-
-// Function to check the database for a match based on phone number
-// Function to check the database for a match based on phone number
 // Function to check the database for a match based on phone number
 async function checkDatabase(phoneNumber, username) {
   logger.info(`${username} - Checking database for phone number: ${phoneNumber}`);

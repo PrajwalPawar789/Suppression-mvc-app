@@ -2,7 +2,7 @@ const { checkDatabaseAPI: masterCheckDatabaseAPI, processSingleEntry: masterProc
 const { checkDatabaseAPI: qualityCheckDatabaseAPI, processSingleEntry: qualityProcessSingleEntry } = require('./quality-qualifiedController');
 const { checkDatabase } = require('./globalemailsuppression'); // Add this line
 const { checkDatabase: invalidCheckDatabaseAPI } = require('./invalidemailControllerforAllSuppCheck'); // Add this line
-
+const { checkDatabase: TPCCTPSSupressionAPI } = require('./TPCCTPSSupressionController'); // Add this line
 
 const fs = require('fs');
 const path = require('path');
@@ -21,16 +21,17 @@ function formatDate(inputDate) {
     return `${day}-${month}-${year}`;
 }
 
-// Helper function to update summary counts
 // In AllsuppressionController.js - Update the updateSummary function
 function updateSummary(type, result, summary) {
-    const statusTypes = [
-        'Match Status', 
-        'Client Code Status', 
-        'Date Status', 
-        'Email Status', 
-        'End Client Status' // Removed LinkedIn Status
-    ];
+    const statusTypes = type === 'TPCCTPS' 
+        ? ['Status'] // Special case for TPCCTPS
+        : [
+            'Match Status', 
+            'Client Code Status', 
+            'Date Status', 
+            'Email Status', 
+            'End Client Status'
+        ];
 
     statusTypes.forEach(statusType => {
         const fullStatusKey = `${type} ${statusType}`;
@@ -44,6 +45,21 @@ function updateSummary(type, result, summary) {
                 (summary.statusCounts[fullStatusKey][statusValue] || 0) + 1;
         }
     });
+}
+
+function renderTPCCTPSStatus(counts) {
+    return `
+    <div class="status-card">
+        <div class="status-header">TPCCTPS Status</div>
+        <div class="status-values">
+            ${Object.entries(counts).map(([status, count]) => `
+                <div class="status-item">
+                    <span class="status-value">${status.replace('TPCCTPS: ', '')}</span>
+                    <span class="status-count">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
 }
 
 async function processAllSuppression(req, res) {
@@ -61,9 +77,10 @@ async function processAllSuppression(req, res) {
         const isQuality = suppressionTypes.includes('qualitySuppression');
         const isGlobal = suppressionTypes.includes('globalEmailSuppression'); // Check for global suppression
         const isInvalid = suppressionTypes.includes('invalidemail'); // Check for global suppression
+        const isTPCCTPSSupression = suppressionTypes.includes('tpcctpsSuppression')
 
         // Validate suppression types
-        if (!isMaster && !isQuality && !isGlobal && !isInvalid) { // Update validation
+        if (!isMaster && !isQuality && !isGlobal && !isInvalid && !isTPCCTPSSupression) { // Update validation
             return res.status(400).json({ success: false, error: 'Invalid suppression type' });
         }
 
@@ -109,6 +126,7 @@ async function processAllSuppression(req, res) {
             let qualityResult = {};
             let globalResult = {}; // Add global result
             let invalidResult = {};
+            let isTPCCTPSResult = {};
 
             const mockRes = {
                 status: (code) => mockRes,
@@ -224,13 +242,32 @@ async function processAllSuppression(req, res) {
                 }
             }
 
+            if (isTPCCTPSSupression) {
+                const phonenumber = rowData.phonenumber;
+
+                console.log("Inside in isTPCCTPSSupression", phonenumber)
+                try {
+                    const matchStatus = await TPCCTPSSupressionAPI(phonenumber, 'system'); // Use placeholder username
+                    isTPCCTPSResult = {
+                        'TPCCTPS Status': `TPCCTPS Status: ${matchStatus}`
+                    };
+                    console.log("Output in isTPCCTPSSupression", isTPCCTPSResult)
+                } catch (error) {
+                    console.error('TPCCTPS Status error:', error);
+                    isTPCCTPSResult = {
+                        'TPCCTPS Status': 'TPCCTPS: Error'
+                    };
+                }
+            }
+
             // Combine results
             const combinedResult = {
                 ...row,
                 ...masterResult,
                 ...qualityResult,
                 ...globalResult,
-                ...invalidResult
+                ...invalidResult,
+                ...isTPCCTPSResult
             };
 
             results.push(combinedResult);
@@ -240,7 +277,8 @@ async function processAllSuppression(req, res) {
             if (isMaster) updateSummary('Master', masterResult, summary);
             if (isQuality) updateSummary('Quality', qualityResult, summary);
             if (isGlobal) updateSummary('Global', globalResult, summary); 
-            if (isInvalid) updateSummary('Quality', invalidResult, summary);
+            if (isInvalid) updateSummary('Invalid', invalidResult, summary);
+            if (isTPCCTPSSupression) updateSummary('TPCCTPS', isTPCCTPSResult, summary);
 
         }
 
@@ -249,6 +287,8 @@ async function processAllSuppression(req, res) {
         XLSX.utils.book_append_sheet(resultWorkbook, XLSX.utils.json_to_sheet(results), 'Results');
         const outputFilename = `suppression_results_${Date.now()}.xlsx`;
         XLSX.writeFile(resultWorkbook, path.join(uploadsDir, outputFilename));
+
+        console.log('Summary Report:', summary);
 
         res.json({
             success: true,
