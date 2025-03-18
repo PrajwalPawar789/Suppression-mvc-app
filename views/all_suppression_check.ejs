@@ -181,7 +181,7 @@
                     <input type="file" class="custom-file-input" name="file" id="excelFile" required accept=".csv,.xlsx,.xls">
                     <label class="custom-file-label" for="excelFile">Choose Excel File</label>
                 </div>
-                <small class="form-text text-muted">Required columns: First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink</small>
+                <small class="form-text text-muted">Required columns: First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink, Domain</small>
             </div>
 
             <!-- Client Codes -->
@@ -482,6 +482,37 @@ if (summaryReport.statusCounts['TPCCTPS Status']) {
         </div>`;
 }
 
+// In the fetch().then() handler
+if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('DNC'))) {
+    summaryHTML += `
+        <div class="suppression-card dnc">
+            <h4>DNC Suppression</h4>
+            <div class="status-grid">
+                ${renderDNCStatus(summaryReport.statusCounts)}
+            </div>
+        </div>`;
+}
+
+if (summaryReport.statusCounts['TE16Msft Domain Status']) {
+    summaryHTML += `
+        <div class="suppression-card te16msft">
+            <h4>TE16 MSFT Domain Suppression</h4>
+            <div class="status-grid">
+                ${renderTE16MsftStatus(summaryReport.statusCounts['TE16Msft Domain Status'])}
+            </div>
+        </div>`;
+}
+
+if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('MSFT'))) {
+    summaryHTML += `
+        <div class="suppression-card msft">
+            <h4>MSFT Suppression</h4>
+            <div class="status-grid">
+                ${renderMSFTStatus(summaryReport.statusCounts)}
+            </div>
+        </div>`;
+}
+
 // Add this new helper function
 function renderGlobalStatus(counts) {
     return `
@@ -511,6 +542,70 @@ function renderTPCCTPSStatus(counts) {
             `).join('')}
         </div>
     </div>`;
+}
+
+function renderDNCStatus(statusCounts) {
+    const dncStatuses = [
+        'DNC Email Status',
+        'DNC Company Status',
+        'DNC Domain Status',
+        'DNC DNC Company Status',
+        'DNC DNC Domain Status'
+    ];
+
+    return dncStatuses.map(statusKey => {
+        const counts = statusCounts[statusKey] || {};
+        return `
+            <div class="status-card">
+                <div class="status-header">${statusKey.replace('DNC ', '')}</div>
+                <div class="status-values">
+                    ${Object.entries(counts).map(([value, count]) => `
+                        <div class="status-item">
+                            <span class="status-value">${value.replace('DNC: ', '')}</span>
+                            <span class="status-count">${count}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function renderTE16MsftStatus(counts) {
+    return `
+    <div class="status-card">
+        <div class="status-header">Domain Status</div>
+        <div class="status-values">
+            ${Object.entries(counts).map(([status, count]) => `
+                <div class="status-item">
+                    <span class="status-value">${status.replace('TE16Msft: ', '')}</span>
+                    <span class="status-count">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
+function renderMSFTStatus(statusCounts) {
+    const msftStatuses = [
+        'MSFT Client Status',
+        'MSFT Domain Status'
+    ];
+
+    return msftStatuses.map(statusKey => {
+        const counts = statusCounts[statusKey] || {};
+        return `
+            <div class="status-card">
+                <div class="status-header">${statusKey.replace('MSFT ', '')}</div>
+                <div class="status-values">
+                    ${Object.entries(counts).map(([value, count]) => `
+                        <div class="status-item">
+                            <span class="status-value">${value.replace('MSFT: ', '')}</span>
+                            <span class="status-count">${count}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    }).join('');
 }
 
 // Add this new helper function

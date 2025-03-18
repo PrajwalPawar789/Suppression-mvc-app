@@ -3,6 +3,10 @@ const { checkDatabaseAPI: qualityCheckDatabaseAPI, processSingleEntry: qualityPr
 const { checkDatabase } = require('./globalemailsuppression'); // Add this line
 const { checkDatabase: invalidCheckDatabaseAPI } = require('./invalidemailControllerforAllSuppCheck'); // Add this line
 const { checkDatabase: TPCCTPSSupressionAPI } = require('./TPCCTPSSupressionController'); // Add this line
+const { checkDatabase: dncCheckDatabase } = require('./dncsuppression');
+const { checkDatabase: te16MsftDomainCheck } = require('./TE16_MSFT_Accept_all_domain_suppression');
+const { checkDatabase: msftClientCheck } = require('./msft_client_suppression');
+const { checkDatabase: msftDomainCheck } = require('./msft_domain_suppression');
 
 const fs = require('fs');
 const path = require('path');
@@ -23,15 +27,31 @@ function formatDate(inputDate) {
 
 // In AllsuppressionController.js - Update the updateSummary function
 function updateSummary(type, result, summary) {
-    const statusTypes = type === 'TPCCTPS' 
-        ? ['Status'] // Special case for TPCCTPS
-        : [
+    let statusTypes = [];
+    
+    if (type === 'DNC') {
+        statusTypes = [
+            'Email Status',
+            'Company Status', 
+            'Domain Status',
+            'DNC Company Status',
+            'DNC Domain Status'
+        ];
+    } else if (type === 'TPCCTPS') {
+        statusTypes = ['Status'];
+    } else if (type === 'TE16Msft') {
+        statusTypes = ['Domain Status'];
+    } else if (type === 'MSFT') {
+        statusTypes = ['Client Status', 'Domain Status'];
+    } else {
+        statusTypes = [
             'Match Status', 
             'Client Code Status', 
             'Date Status', 
             'Email Status', 
             'End Client Status'
         ];
+    }
 
     statusTypes.forEach(statusType => {
         const fullStatusKey = `${type} ${statusType}`;
@@ -78,9 +98,13 @@ async function processAllSuppression(req, res) {
         const isGlobal = suppressionTypes.includes('globalEmailSuppression'); // Check for global suppression
         const isInvalid = suppressionTypes.includes('invalidemail'); // Check for global suppression
         const isTPCCTPSSupression = suppressionTypes.includes('tpcctpsSuppression')
+        const isDNC = suppressionTypes.includes('deadContact');
+        const isTE16MsftDomain = suppressionTypes.includes('te16MsftDomain');
+        const isMsftSuppression = suppressionTypes.includes('msftSuppression');
 
         // Validate suppression types
-        if (!isMaster && !isQuality && !isGlobal && !isInvalid && !isTPCCTPSSupression) { // Update validation
+        if (!isMaster && !isQuality && !isGlobal && !isInvalid && 
+            !isTPCCTPSSupression && !isDNC && !isTE16MsftDomain && !isMsftSuppression) {
             return res.status(400).json({ success: false, error: 'Invalid suppression type' });
         }
 
@@ -119,14 +143,20 @@ async function processAllSuppression(req, res) {
                 companyname: row['Company Name'],
                 phonenumber: row['Phone Number'],
                 linkedinlink: row['linkedinLink'],
-                dateFilter: formattedDate // Use formatted date here
+                domain: row['Domain'], // Add this line to capture domain from Excel
+                dateFilter: formattedDate
             };
+
+            console.log("Row Data All: ", rowData);
 
             let masterResult = {};
             let qualityResult = {};
             let globalResult = {}; // Add global result
             let invalidResult = {};
             let isTPCCTPSResult = {};
+            let dncResult = {};
+            let te16MsftResult = {};
+            let msftResult = {};
 
             const mockRes = {
                 status: (code) => mockRes,
@@ -260,6 +290,69 @@ async function processAllSuppression(req, res) {
                 }
             }
 
+            if (isDNC) {
+                try {
+                    const dncResponse = await dncCheckDatabase(
+                        rowData.emailid,
+                        rowData.companyname,
+                        rowData.domain,
+                        'system'
+                    );
+                    
+                    dncResult = {
+                        'DNC Email Status': `DNC: ${dncResponse.email_status}`,
+                        'DNC Company Status': `DNC: ${dncResponse.company_status}`,
+                        'DNC Domain Status': `DNC: ${dncResponse.domain_status}`,
+                        'DNC DNC Company Status': `DNC: ${dncResponse.dnc_company_status}`,
+                        'DNC DNC Domain Status': `DNC: ${dncResponse.dnc_domain_status}`
+                    };
+                } catch (error) {
+                    console.error('DNC check error:', error);
+                    dncResult = {
+                        'DNC Email Status': 'DNC: Error',
+                        'DNC Company Status': 'DNC: Error',
+                        'DNC Domain Status': 'DNC: Error'
+                    };
+                }
+            }
+
+            // Process TE16 MSFT Domain Suppression
+            if (isTE16MsftDomain) {
+                try {
+                    const domainResponse = await te16MsftDomainCheck(rowData.domain, 'system');
+                    te16MsftResult = {
+                        // Access the status property from the response object
+                        'TE16Msft Domain Status': `TE16Msft: ${domainResponse.status}`
+                    };
+                } catch (error) {
+                    console.error('TE16 MSFT Domain check error:', error);
+                    te16MsftResult = {
+                        'TE16Msft Domain Status': 'TE16Msft: Error'
+                    };
+                }
+            }
+
+            // Process MSFT Suppression
+            if (isMsftSuppression) {
+            try {
+                // Client check
+                const clientStatus = await msftClientCheck(rowData.emailid, 'system');
+                // Domain check
+                const domainStatus = await msftDomainCheck(rowData.domain, 'system');
+                
+                msftResult = {
+                    'MSFT Client Status': `MSFT: ${clientStatus}`,
+                    'MSFT Domain Status': `MSFT: ${domainStatus}`
+                };
+            } catch (error) {
+                console.error('MSFT check error:', error);
+                msftResult = {
+                    'MSFT Client Status': 'MSFT: Error',
+                    'MSFT Domain Status': 'MSFT: Error'
+                };
+            }
+            }
+
             // Combine results
             const combinedResult = {
                 ...row,
@@ -267,7 +360,10 @@ async function processAllSuppression(req, res) {
                 ...qualityResult,
                 ...globalResult,
                 ...invalidResult,
-                ...isTPCCTPSResult
+                ...isTPCCTPSResult,
+                ...dncResult,
+                ...te16MsftResult,
+                ...msftResult 
             };
 
             results.push(combinedResult);
@@ -279,6 +375,10 @@ async function processAllSuppression(req, res) {
             if (isGlobal) updateSummary('Global', globalResult, summary); 
             if (isInvalid) updateSummary('Invalid', invalidResult, summary);
             if (isTPCCTPSSupression) updateSummary('TPCCTPS', isTPCCTPSResult, summary);
+            if (isDNC) updateSummary('DNC', dncResult, summary);
+            if (isTE16MsftDomain) updateSummary('TE16Msft', te16MsftResult, summary);
+            if (isMsftSuppression) updateSummary('MSFT', msftResult, summary);
+
 
         }
 

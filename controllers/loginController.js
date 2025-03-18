@@ -1,11 +1,19 @@
 const { Pool } = require('pg');
 const logger = require('./logger');
 
+// const pool = new Pool({
+//   user: "postgres",
+//   host: "158.220.121.203",
+//   database: "postgres",
+//   password: "P0stgr3s%098",
+//   port: 5432,
+// });
+
 const pool = new Pool({
-  user: "postgres",
-  host: "158.220.121.203",
-  database: "postgres",
-  password: "P0stgr3s%098",
+  user: "root",
+  host: "192.168.1.36",
+  database: "suppression",
+  password: "Scitilnam$007",
   port: 5432,
 });
 

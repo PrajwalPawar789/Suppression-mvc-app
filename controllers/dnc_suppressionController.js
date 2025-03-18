@@ -5,11 +5,19 @@ const path = require('path');
 const fs = require('fs');
 const excelToJson = require('convert-excel-to-json');
 
-const pool = new Pool({
-    user: "postgres",
-    host: "158.220.121.203",
-    database: "postgres",
-    password: "P0stgr3s%098",
+// const pool = new Pool({
+//     user: "postgres",
+//     host: "158.220.121.203",
+//     database: "postgres",
+//     password: "P0stgr3s%098",
+//     port: 5432,
+//   });
+
+  const pool = new Pool({
+    user: "root",
+    host: "192.168.1.36",
+    database: "suppression",
+    password: "Scitilnam$007",
     port: 5432,
   });
 
