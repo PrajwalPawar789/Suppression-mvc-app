@@ -7,6 +7,7 @@ const { checkDatabase: dncCheckDatabase } = require('./dncsuppression');
 const { checkDatabase: te16MsftDomainCheck } = require('./TE16_MSFT_Accept_all_domain_suppression');
 const { checkDatabase: msftClientCheck } = require('./msft_client_suppression');
 const { checkDatabase: msftDomainCheck } = require('./msft_domain_suppression');
+const logger = require('./logger');
 
 const fs = require('fs');
 const path = require('path');
@@ -84,6 +85,9 @@ function renderTPCCTPSStatus(counts) {
 
 async function processAllSuppression(req, res) {
     try {
+        const username = req.session.username;
+
+        console.log(`${username} checking all suppression at once`)
         // Validate request
         if (!req.file || !req.body.suppressionTypes?.length) {
             return res.status(400).json({
@@ -135,7 +139,11 @@ async function processAllSuppression(req, res) {
         const results = [];
         const summary = { totalRecords: 0, statusCounts: {} };
 
+        let leadIndex = 0;
+
         for (const row of data) {
+            leadIndex++;  // Increment first to start counting from 1
+
             const rowData = {
                 firstname: row['First Name'],
                 lastname: row['Last Name'],
@@ -167,6 +175,9 @@ async function processAllSuppression(req, res) {
             // Process Master Suppression
             if (isMaster) {
                 let suppressionResult;
+
+                logger.info(`${username} checked Master suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, left3=${rowData.firstname?.substring(0, 3)}, left4=${rowData.lastname?.substring(0, 4)}, linkedinLink=${rowData.linkedinlink}`);
+
                 if (masterClientCode === 'All') {
                     suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
                 } else if (masterClientCode === 'MSFT') {
@@ -205,6 +216,9 @@ async function processAllSuppression(req, res) {
             // Process Quality Suppression
             if (isQuality) {
                 let suppressionResult;
+
+                logger.info(`${username} checked Quality suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, clientCode=${qualityClientCode}, endClient=${rowData.companyname}`);
+
                 console.log(`Using date for query: ${formattedDate}`);
                 
                 if (qualityClientCode === 'MSFT') {
@@ -243,6 +257,9 @@ async function processAllSuppression(req, res) {
             // Process Global Email Suppression
             if (isGlobal) {
                 const email = rowData.emailid;
+
+                logger.info(`${username} checked Global suppression for lead ${leadIndex - 1}: email=${rowData.emailid}`);
+
                 try {
                     const matchStatus = await checkDatabase(email, 'system'); // Use placeholder username
                     globalResult = {
@@ -259,6 +276,9 @@ async function processAllSuppression(req, res) {
             // Process isInvalid Email Suppression
             if (isInvalid) {
                 const email = rowData.emailid;
+
+                logger.info(`${username} checked Invalid Email suppression for lead ${leadIndex - 1}: email=${rowData.emailid}`);
+
                 try {
                     const matchStatus = await invalidCheckDatabaseAPI(email, 'system'); // Use placeholder username
                     invalidResult = {
@@ -275,7 +295,8 @@ async function processAllSuppression(req, res) {
             if (isTPCCTPSSupression) {
                 const phonenumber = rowData.phonenumber;
 
-                console.log("Inside in isTPCCTPSSupression", phonenumber)
+                logger.info(`${username} checked TPCCTPS suppression for lead ${leadIndex - 1}: phoneNumber=${rowData.phonenumber}`);
+
                 try {
                     const matchStatus = await TPCCTPSSupressionAPI(phonenumber, 'system'); // Use placeholder username
                     isTPCCTPSResult = {
@@ -291,6 +312,9 @@ async function processAllSuppression(req, res) {
             }
 
             if (isDNC) {
+
+                logger.info(`${username} checked DNC suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, company=${rowData.companyname}, domain=${rowData.domain}`);
+
                 try {
                     const dncResponse = await dncCheckDatabase(
                         rowData.emailid,
@@ -318,6 +342,9 @@ async function processAllSuppression(req, res) {
 
             // Process TE16 MSFT Domain Suppression
             if (isTE16MsftDomain) {
+
+                logger.info(`${username} checked TE16 MSFT Domain suppression for lead ${leadIndex - 1}: domain=${rowData.domain}`);
+
                 try {
                     const domainResponse = await te16MsftDomainCheck(rowData.domain, 'system');
                     te16MsftResult = {
@@ -334,6 +361,9 @@ async function processAllSuppression(req, res) {
 
             // Process MSFT Suppression
             if (isMsftSuppression) {
+
+                logger.info(`${username} checked MSFT suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, domain=${rowData.domain}`);
+
             try {
                 // Client check
                 const clientStatus = await msftClientCheck(rowData.emailid, 'system');
