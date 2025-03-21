@@ -193,7 +193,7 @@ router.post('/invalidemail', async (req, res) => {
   const username = req.session.username || 'Anonymous';
 
   if (!email) {
-    return res.status(400).json({ error: 'Missing required fields: email, companyName, domain' });
+    return res.status(400).json({ error: 'Missing required fields: email' });
   }
 
   try {

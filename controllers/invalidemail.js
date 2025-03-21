@@ -4,14 +4,6 @@ const ExcelJS = require('exceljs');
 const logger = require('./logger'); // Ensure you have a logger module
 
 // PostgreSQL connection settings
-// const pool = new Pool({
-//   user: "postgres",
-//   host: "158.220.121.203",
-//   database: "postgres",
-//   password: "P0stgr3s%098",
-//   port: 5432,
-// });
-
 const pool = new Pool({
   user: "root",
   host: "192.168.1.36",
@@ -25,82 +17,77 @@ const normalizeString = (str) => {
   if (str === undefined || str === null) {
     return "";
   }
-  if (typeof str !== "string") {
-    return "";
-  }
-  return str.trim();
+  return typeof str === "string" ? str.trim() : "";
 };
 
-// Function to check the database for a match based on email, left3, and left4
-async function checkDatabase(email, left3, left4, username) {
-  logger.info(`${username} - Checking database for email: ${email}, left3: ${left3}, left4: ${left4}`);
+// Function to check the database for a match based on email
+async function checkDatabase(email, username) {
+  logger.info(`${username} - Checking database for email: ${email}`);
   const client = await pool.connect();
+  
   try {
     const query = `
       SELECT 
-        CASE WHEN EXISTS (SELECT 1 FROM public.deadcontact WHERE emailid = $1) THEN 'Email Match' ELSE 'Email Unmatch' END AS email_status,
-        CASE WHEN EXISTS (SELECT 1 FROM public.deadcontact WHERE left3 = $2) THEN 'Left3 Match' ELSE 'Left3 Unmatch' END AS left3_status,
-        CASE WHEN EXISTS (SELECT 1 FROM public.deadcontact WHERE left4 = $3) THEN 'Left4 Match' ELSE 'Left4 Unmatch' END AS left4_status
+        CASE 
+          WHEN EXISTS (
+            SELECT 1 FROM public.invalid_email_addresses WHERE email_address = $1
+          ) THEN 'Email Match'
+          ELSE 'Email Unmatch'
+        END AS email_status
     `;
-    const result = await client.query(query, [email, left3, left4]);
-    const row = result.rows[0];
+    
+    const result = await client.query(query, [email]);
+    const row = result.rows[0] || { email_status: 'Unmatch' };
+    
     return {
       emailStatus: row.email_status,
-      left3Status: row.left3_status,
-      left4Status: row.left4_status,
     };
   } catch (error) {
-    logger.error(`${username} - Database query error for email ${email}: ${error.message}`);
-    return { emailStatus: 'Error', left3Status: 'Error', left4Status: 'Error' };
+    logger.error(`${username} - Database query error: ${error.message}`);
+    return { emailStatus: 'Error' };
   } finally {
     client.release();
-    logger.info(`${username} - Database connection released after checking email: ${email}`);
+    logger.info(`${username} - Database connection released`);
   }
 }
 
 // Function to process the uploaded file
 async function processFile(filePath, username) {
   logger.info(`${username} - Processing file: ${filePath}`);
+  
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
   const worksheet = workbook.getWorksheet(1);
 
-  // Check if the required column names are present
-  const firstNameIndex = worksheet.getRow(1).values.indexOf('First Name');
-  const lastNameIndex = worksheet.getRow(1).values.indexOf('Last Name');
-  const companyNameIndex = worksheet.getRow(1).values.indexOf('Company Name');
-  const emailIndex = worksheet.getRow(1).values.indexOf('Email ID');
+  // Handle missing columns gracefully
+  let emailIndex = worksheet.getRow(1).values.indexOf('Email ID');
 
-  if (firstNameIndex === -1 || lastNameIndex === -1 || companyNameIndex === -1 || emailIndex === -1) {
+  if (emailIndex === -1) {
+    logger.warn(`${username} - Missing 'Email ID' column. Trying 'Email' instead.`);
+    emailIndex = worksheet.getRow(1).values.indexOf('Email');
+  }
+
+  if (emailIndex === -1) {
     logger.error(`${username} - Missing required columns`);
     return { error: 'Missing required columns' };
   }
 
-  // Add the "Match Status" columns
+  // Add "Email Match Status" column
   worksheet.getRow(1).getCell(worksheet.columnCount + 1).value = 'Email Match Status';
-  worksheet.getRow(1).getCell(worksheet.columnCount + 2).value = 'Left3 Match Status';
-  worksheet.getRow(1).getCell(worksheet.columnCount + 3).value = 'Left4 Match Status';
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
-    const firstName = normalizeString(row.getCell(firstNameIndex).value);
-    const lastName = normalizeString(row.getCell(lastNameIndex).value);
-    const companyName = normalizeString(row.getCell(companyNameIndex).value);
     const email = normalizeString(row.getCell(emailIndex).value);
+
+    if (email) {
+      const { emailStatus } = await checkDatabase(email, username);
+      row.getCell(worksheet.columnCount + 1).value = emailStatus;
+      logger.info(`${username} - Processed row ${i} with email ${email} - Email Status: ${emailStatus}`);
+    } else {
+      row.getCell(worksheet.columnCount + 1).value = 'Invalid Email';
+    }
     
-    // Generate left3 and left4
-    const left3 = `${firstName} ${lastName}`;
-    const left4 = companyName;
-
-    const { emailStatus, left3Status, left4Status } = await checkDatabase(email, left3, left4, username);
-
-    // Write results to the new columns
-    row.getCell(worksheet.columnCount + 1).value = emailStatus;
-    row.getCell(worksheet.columnCount + 2).value = left3Status;
-    row.getCell(worksheet.columnCount + 3).value = left4Status;
-
     row.commit();
-    logger.info(`${username} - Processed row ${i} with email ${email} - Email Status: ${emailStatus}, Left3 Status: ${left3Status}, Left4 Status: ${left4Status}`);
   }
 
   const newFilePath = `Updated-${Date.now()}.xlsx`;
@@ -109,20 +96,25 @@ async function processFile(filePath, username) {
   return newFilePath;
 }
 
+// Upload file handler
 const uploadFile = async (req, res) => {
-  const username = req.session.username || 'Anonymous'; // Fallback if username is not set
+  const username = req.session?.username || 'Anonymous'; 
+
   if (!req.file) {
     logger.warn(`${username} - No file uploaded.`);
     return res.status(400).send("No file uploaded.");
   }
 
   const filePath = req.file.path;
+
   try {
     const result = await processFile(filePath, username);
+
     if (result.error) {
       logger.error(`${username} - File processing error: ${result.error}`);
       return res.status(400).send(result.error);
     }
+
     logger.info(`${username} - File download initiated: ${result}`);
     res.download(result);
   } catch (error) {
@@ -134,9 +126,9 @@ const uploadFile = async (req, res) => {
   }
 };
 
+// Export the functions
 module.exports = {
   uploadFile,
   processFile,
   checkDatabase,
-  // Other exports as needed...
 };
