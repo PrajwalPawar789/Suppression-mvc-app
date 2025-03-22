@@ -5,19 +5,11 @@ const ExcelJS = require("exceljs");
 const logger = require("./logger"); // Ensure you have a logger module
 
 // PostgreSQL connection settings
-// const pool = new Pool({
-//   user: "postgres",
-//   host: "158.220.121.203",
-//   database: "postgres",
-//   password: "P0stgr3s%098",
-//   port: 5432,
-// });
-
 const pool = new Pool({
-  user: "root",
-  host: "192.168.1.36",
-  database: "suppression",
-  password: "Scitilnam$007",
+  user: "postgres",
+  host: "158.220.121.203",
+  database: "postgres",
+  password: "P0stgr3s%098",
   port: 5432,
 });
 
@@ -83,15 +75,15 @@ async function checkDatabase(
         $3 AS left_3,
         $4 AS left_4,
         $5 AS email_id,
-        TO_DATE($6, 'DD-Mon-YY') AS lead_date,  -- Convert input date to DATE type
+        $6 AS lead_date,
         $7 AS end_client_name_input  -- Optional parameter (pass NULL if not needed)
 ),
 filtered_campaigns AS (
     SELECT
         CASE
-            WHEN TO_DATE(c.date_, 'DD-Mon-YY') > d.lead_date THEN 'Still Suppressed'  -- Cast c.date_ to DATE
-                ELSE 'Suppression Cleared'
-            END AS date_status,
+            WHEN c.date_ > d.lead_date THEN 'Still Suppressed'
+            ELSE 'Suppression Cleared'
+        END AS date_status,
         CASE
             WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
             ELSE 'Unmatch'

@@ -5,19 +5,11 @@ const ExcelJS = require("exceljs");
 const logger = require("./logger"); // Ensure you have a logger module
 
 // PostgreSQL connection settings
-// const pool = new Pool({
-//   user: "postgres",
-//   host: "158.220.121.203",
-//   database: "postgres",
-//   password: "P0stgr3s%098",
-//   port: 5432,
-// });
-
 const pool = new Pool({
-  user: "root",
-  host: "192.168.1.36",
-  database: "suppression",
-  password: "Scitilnam$007",
+  user: "postgres",
+  host: "158.220.121.203",
+  database: "postgres",
+  password: "P0stgr3s%098",
   port: 5432,
 });
 
@@ -49,7 +41,7 @@ function formatDateForDatabase(dateStr) {
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) {
       console.log('Invalid date input:', dateStr);
-      // return '23-Sep-24';
+      return '23-Sep-24';
     }
     
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -58,7 +50,7 @@ function formatDateForDatabase(dateStr) {
     return formattedDate;
   } catch (error) {
     console.error('Date formatting error:', error);
-    // return '23-Sep-24';
+    return '23-Sep-24';
   }
 }
 
@@ -77,92 +69,92 @@ async function checkDatabase(
   try {
     const query = `
     WITH data AS (
-        SELECT 
-            $1 AS linkedin_link,
-            $2 AS client_code,
-            $3 AS left_3,
-            $4 AS left_4,
-            $5 AS email_id,
-            TO_DATE($6, 'DD-Mon-YY') AS lead_date,  -- Convert input date to DATE type
-            $7 AS end_client_name_input  -- Optional parameter (pass NULL if not needed)
-    ),
-    filtered_campaigns AS (
-        SELECT
-            CASE
-                WHEN TO_DATE(c.date_, 'DD-Mon-YY') > d.lead_date THEN 'Still Suppressed'  -- Cast c.date_ to DATE
+    SELECT 
+        $1 AS linkedin_link,
+        $2 AS client_code,
+        $3 AS left_3,
+        $4 AS left_4,
+        $5 AS email_id,
+        TO_DATE($6, 'DD-Mon-YY') AS lead_date,  -- Convert input date to DATE type
+        $7 AS end_client_name_input  -- Optional parameter (pass NULL if not needed)
+),
+filtered_campaigns AS (
+    SELECT
+        CASE
+            WHEN TO_DATE(c.date_, 'DD-Mon-YY') > d.lead_date THEN 'Still Suppressed'  -- Cast c.date_ to DATE
                 ELSE 'Suppression Cleared'
             END AS date_status,
-            CASE
-                WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
-                ELSE 'Unmatch'
-            END AS match_status,
-            CASE
-                WHEN c.email = d.email_id THEN 'Match'
-                ELSE 'unmatch (' || c.email || ')'
-            END AS email_status,
-            CASE
-                WHEN c.client = d.client_code THEN 'Match (' || c.client || ')'
-                ELSE 'Unmatch'
-            END AS client_code_status,
-            CASE
-                WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
-                ELSE 'unmatch (' || c.linkedin_link || ')'
-            END AS linkedin_link_status,
-            CASE
-                WHEN d.end_client_name_input IS NULL THEN 'Not Checked'
-                WHEN c.end_client_name = d.end_client_name_input THEN 'Match'
-                ELSE 'Unmatch'
-            END AS end_client_name_status
-        FROM
-            public.campaigns c
-        JOIN
-            data d ON c.client = d.client_code
-        WHERE
-            (c.linkedin_link = d.linkedin_link
-            OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
-            OR c.email = d.email_id)
-            AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'))
-    ),
-    final_result AS (
-        SELECT * FROM filtered_campaigns
-        WHERE date_status = 'Still Suppressed'
-        UNION ALL
-        SELECT * FROM filtered_campaigns
-        WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
-            SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
-        )
+        CASE
+            WHEN c.left_3 = d.left_3 OR c.left_4 = d.left_4 THEN 'Match'
+            ELSE 'Unmatch'
+        END AS match_status,
+        CASE
+            WHEN c.email = d.email_id THEN 'Match'
+            ELSE 'unmatch (' || c.email || ')'
+        END AS email_status,
+        CASE
+            WHEN c.client = d.client_code THEN 'Match (' || c.client || ')'
+            ELSE 'Unmatch'
+        END AS client_code_status,
+        CASE
+            WHEN c.linkedin_link = d.linkedin_link THEN 'Match'
+            ELSE 'unmatch (' || c.linkedin_link || ')'
+        END AS linkedin_link_status,
+        CASE
+            WHEN d.end_client_name_input IS NULL THEN 'Not Checked'
+            WHEN c.end_client_name = d.end_client_name_input THEN 'Match'
+            ELSE 'Unmatch'
+        END AS end_client_name_status
+    FROM
+        public.campaigns c
+    JOIN
+        data d ON c.client = d.client_code
+    WHERE
+        (c.linkedin_link = d.linkedin_link
+        OR (c.left_3 = d.left_3 OR c.left_4 = d.left_4)
+        OR c.email = d.email_id)
+        AND NOT (c.client = 'TE16' AND c.end_client_name IN ('MSFT', 'Microsoft'))
+),
+final_result AS (
+    SELECT * FROM filtered_campaigns
+    WHERE date_status = 'Still Suppressed'
+    UNION ALL
+    SELECT * FROM filtered_campaigns
+    WHERE date_status = 'Suppression Cleared' AND NOT EXISTS (
+        SELECT 1 FROM filtered_campaigns WHERE date_status = 'Still Suppressed'
     )
+)
+SELECT 
+    COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
+    COALESCE(match_status, 'Unmatch') AS match_status,
+    COALESCE(email_status, 'Unmatch') AS email_status,
+    COALESCE(client_code_status, 'Unmatch') AS client_code_status,
+    COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status,
+    COALESCE(end_client_name_status, 
+        CASE 
+            WHEN (SELECT end_client_name_input FROM data) IS NULL 
+            THEN 'Not Checked' 
+            ELSE 'Unmatch' 
+        END
+    ) AS end_client_name_status
+FROM (
+    SELECT * FROM final_result
+    UNION ALL
     SELECT 
-        COALESCE(date_status, 'Fresh Lead GTG') AS date_status,
-        COALESCE(match_status, 'Unmatch') AS match_status,
-        COALESCE(email_status, 'Unmatch') AS email_status,
-        COALESCE(client_code_status, 'Unmatch') AS client_code_status,
-        COALESCE(linkedin_link_status, 'Unmatch') AS linkedin_link_status,
-        COALESCE(end_client_name_status, 
-            CASE 
-                WHEN (SELECT end_client_name_input FROM data) IS NULL 
-                THEN 'Not Checked' 
-                ELSE 'Unmatch' 
-            END
-        ) AS end_client_name_status
-    FROM (
-        SELECT * FROM final_result
-        UNION ALL
-        SELECT 
-            'Fresh Lead GTG' AS date_status, 
-            'Unmatch' AS match_status, 
-            'Unmatch' AS email_status, 
-            'Unmatch' AS client_code_status, 
-            'Unmatch' AS linkedin_link_status,
-            CASE 
-                WHEN (SELECT end_client_name_input FROM data) IS NULL 
-                THEN 'Not Checked' 
-                ELSE 'Unmatch' 
-            END AS end_client_name_status
-        WHERE NOT EXISTS (SELECT 1 FROM final_result)
-    ) AS subquery
-    LIMIT 1;
-`;
+        'Fresh Lead GTG' AS date_status, 
+        'Unmatch' AS match_status, 
+        'Unmatch' AS email_status, 
+        'Unmatch' AS client_code_status, 
+        'Unmatch' AS linkedin_link_status,
+        CASE 
+            WHEN (SELECT end_client_name_input FROM data) IS NULL 
+            THEN 'Not Checked' 
+            ELSE 'Unmatch' 
+        END AS end_client_name_status
+    WHERE NOT EXISTS (SELECT 1 FROM final_result)
+) AS subquery
+LIMIT 1;
+    `;
 
     const formattedDate = formatDateForDatabase(dateFilter);
     console.log('Using date for query:', formattedDate);
@@ -462,7 +454,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
             $2 AS left_4,
             $3 AS email_id,
             $4 AS linkedin_link,
-            TO_DATE($5, 'DD-Mon-YY') AS lead_date,  -- Convert input date to DATE type
+            $5 AS lead_date,
             ARRAY['TE16', 'DI31', 'AD62', 'AN12', 'DY78', 'MA99', 'NT26', 'UE88', 'AR13', 'TE72', 'DY78'] AS client_codes
     ),
     filtered_campaigns AS (
