@@ -100,6 +100,18 @@ router.get('/insert', (req, res, next) => {
   }
 });
 
+router.get('/insert-qalityqualify', (req, res, next) => {
+  const allowedUsernames = [
+    'prajwal.pawar'
+  ];
+  
+  if (req.session.isAuthenticated && allowedUsernames.includes(req.session.username)) {
+    res.render('insertsuppressiondataQualityQualify');
+  } else {
+    res.redirect('/login');
+  }
+});
+
 
 router.get('/checkemail', isAuthenticated, (req, res) => {
   // console.log(req.session.username);
