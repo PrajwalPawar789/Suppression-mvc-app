@@ -118,7 +118,7 @@ async function processAllSuppression(req, res) {
             return res.status(400).json({ success: false, error: 'Lead date is required' });
         }
         
-        const formattedDate = formatDate(leadDate + '-01'); // Add day part for parsing
+        const formattedDate = formatDate(leadDate); // Add day part for parsing
         console.log(`Formatted date: ${formattedDate}`);
 
         // Validate client codes
@@ -395,6 +395,63 @@ async function processAllSuppression(req, res) {
                 ...te16MsftResult,
                 ...msftResult 
             };
+
+            // Calculate Final Status based on selected suppressions
+let finalStatus = 'Unmatch';
+
+// Master Suppression: Match if Master Date Status is "Still Suppressed"
+if (isMaster && combinedResult['Master Date Status'] === 'Master: Still Suppressed') {
+    finalStatus = 'Match';
+}
+
+// Quality Suppression: Match if Quality Date Status is "Still Suppressed"
+if (isQuality && combinedResult['Quality Date Status'] === 'Quality: Still Suppressed') {
+    finalStatus = 'Match';
+}
+
+// Global Email: Direct match check
+if (isGlobal && combinedResult['Global Email Status'] === 'Global: Match') {
+    finalStatus = 'Match';
+}
+
+// Invalid Email: Direct match check
+if (isInvalid && combinedResult['Invalid Email Status'] === 'Invalid: Match') {
+    finalStatus = 'Match';
+}
+
+// TPCCTPS: Direct match check
+if (isTPCCTPSSupression && combinedResult['TPCCTPS Status'] === 'TPCCTPS Status: Match') {
+    finalStatus = 'Match';
+}
+
+// DNC: Check if any DNC column is "Match"
+if (isDNC) {
+    const dncColumns = [
+        'DNC Email Status',
+        'DNC Company Status',
+        'DNC Domain Status',
+        'DNC DNC Company Status',
+        'DNC DNC Domain Status'
+    ];
+    if (dncColumns.some(col => combinedResult[col] === 'DNC: Match')) {
+        finalStatus = 'Match';
+    }
+}
+
+// TE16Msft Domain: Direct match check
+if (isTE16MsftDomain && combinedResult['TE16Msft Domain Status'] === 'TE16Msft: Match') {
+    finalStatus = 'Match';
+}
+
+// MSFT: Check Client or Domain match
+if (isMsftSuppression) {
+    if (combinedResult['MSFT Client Status'] === 'MSFT: Match' || combinedResult['MSFT Domain Status'] === 'MSFT: Match') {
+        finalStatus = 'Match';
+    }
+}
+
+// Add Final Status to the result
+combinedResult['Final Status'] = finalStatus;
 
             results.push(combinedResult);
             summary.totalRecords++;

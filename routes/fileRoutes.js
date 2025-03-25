@@ -6,6 +6,7 @@ const router = express.Router();
 const fileController = require('../controllers/fileController');
 const quality_qualifiedController = require('../controllers/quality-qualifiedController');
 const suppressionDataController = require('../controllers/suppressionDataController');
+const suppressionQQDataController = require('../controllers/suppressionQQDataController');
 const checkemailController = require('../controllers/checkemailController');
 const loginController = require('../controllers/loginController'); // Add this line
 const invalidemailController = require('../controllers/invalidemail');
@@ -320,6 +321,9 @@ router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'
 // router.post('/quality-qualified', isAuthenticated, qualityqualifiedController.upload.single('excelFile'), qualityqualifiedController.uploadFile);
 
 router.post('/process', isAuthenticated, fileController.upload.single('excelFile'), suppressionDataController.processExcel);
+
+router.post('/process-qq', isAuthenticated, fileController.upload.single('excelFile'), suppressionQQDataController.processExcel);
+
 router.post('/invalidemailController1', isAuthenticated, upload.single('file'), invalidemailController1.insertInvalidEmailData);
 
 router.post('/checkemail', isAuthenticated, checkemailController.checkEmail);
