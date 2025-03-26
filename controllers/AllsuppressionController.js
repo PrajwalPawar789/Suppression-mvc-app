@@ -143,7 +143,7 @@ async function processAllSuppression(req, res) {
 
         for (const row of data) {
             leadIndex++;  // Increment first to start counting from 1
-
+        
             const rowData = {
                 firstname: row['First Name'],
                 lastname: row['Last Name'],
@@ -154,9 +154,9 @@ async function processAllSuppression(req, res) {
                 domain: row['Domain'], // Add this line to capture domain from Excel
                 dateFilter: formattedDate
             };
-
+        
             console.log("Row Data All: ", rowData);
-
+        
             let masterResult = {};
             let qualityResult = {};
             let globalResult = {}; // Add global result
@@ -165,7 +165,7 @@ async function processAllSuppression(req, res) {
             let dncResult = {};
             let te16MsftResult = {};
             let msftResult = {};
-
+        
             const mockRes = {
                 status: (code) => mockRes,
                 json: (data) => data,
@@ -173,45 +173,52 @@ async function processAllSuppression(req, res) {
             };
 
             // Process Master Suppression
-            if (isMaster) {
-                let suppressionResult;
+    if (isMaster) {
+        let suppressionResult;
 
-                logger.info(`${username} checked Master suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, left3=${rowData.firstname?.substring(0, 3)}, left4=${rowData.lastname?.substring(0, 4)}, linkedinLink=${rowData.linkedinlink}`);
+        // Generate combined left3 and left4 values from first 3 letters of firstname, lastname, companyname
+        const left3Combined = 
+            (rowData.firstname?.substring(0, 3) || '') +
+            (rowData.lastname?.substring(0, 3) || '') +
+            (rowData.companyname?.substring(0, 3) || '');
+        const left4Combined = left3Combined; // As per user instruction, left4 uses the same combination
 
-                if (masterClientCode === 'All') {
-                    suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
-                } else if (masterClientCode === 'MSFT') {
-                    const mockReq = {
-                        body: {
-                            ...rowData,
-                            email: rowData.emailid,
-                            end_client_name: rowData.companyname,
-                            dateFilter: formattedDate
-                        }
-                    };
-                    suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
-                } else {
-                    suppressionResult = await masterCheckDatabaseAPI({
-                        body: {
-                            left3: rowData.firstname?.substring(0, 3),
-                            left4: rowData.lastname?.substring(0, 4),
-                            email: rowData.emailid,
-                            clientCode: masterClientCode,
-                            dateFilter: formattedDate,
-                            end_client_name: rowData.companyname
-                        }
-                    }, mockRes);
+        logger.info(`${username} checked Master suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, left3=${left3Combined}, left4=${left4Combined}, linkedinLink=${rowData.linkedinlink}`);
+
+        if (masterClientCode === 'All') {
+            suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
+        } else if (masterClientCode === 'MSFT') {
+            const mockReq = {
+                body: {
+                    ...rowData,
+                    email: rowData.emailid,
+                    end_client_name: rowData.companyname,
+                    dateFilter: formattedDate
                 }
+            };
+            suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
+        } else {
+            suppressionResult = await masterCheckDatabaseAPI({
+                body: {
+                    left3: left3Combined, // Use combined value
+                    left4: left4Combined, // Use combined value
+                    email: rowData.emailid,
+                    clientCode: masterClientCode,
+                    dateFilter: formattedDate,
+                    end_client_name: rowData.companyname
+                }
+            }, mockRes);
+        }
 
-                masterResult = {
-                    'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
-                    'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
-                    'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
-                    'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
-                    'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
-                    'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
-                };
-            }
+        masterResult = {
+            'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
+            'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+            'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+            'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
+            'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+            'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
+        };
+    }
 
             // Process Quality Suppression
             if (isQuality) {
