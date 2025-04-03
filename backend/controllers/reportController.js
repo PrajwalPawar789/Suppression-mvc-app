@@ -48,7 +48,6 @@ const getReportData = async (req, res) => {
     FROM 
       public.campaigns
     WHERE
-      date_ ~ '^\\d{2}-[A-Za-z]{3}-\\d{2}$' AND
       TO_DATE(date_, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '${diffDays} days'
     GROUP BY 
       date_,
@@ -109,7 +108,78 @@ const getLeadDataForDay = async (req, res) => {
   }
 };
 
+const getQQLeadDataForDay = async (req, res) => {
+  console.log("Inside the getQQDataForDay function");
+
+  const diffDays = parseInt(req.query.diffDays, 10) || 0; // Ensure it's an integer
+  console.log(`Received diffDays: ${diffDays}`);
+
+  const query = `
+    SELECT *
+    FROM public.quality_qualified
+    WHERE date_::DATE = CURRENT_DATE - INTERVAL '${diffDays} days';
+  `;
+
+  console.log("Given query for downloading the data", query);
+
+  try {
+    await testConnection();
+    const result = await pool.query(query);
+    console.log('Query Result:', result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error executing query:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const getQQReportData = async (req, res) => {
+  console.log("Inside the getQQReportData function");
+
+  const diffDays = parseInt(req.query.diffDays, 10) || 0; // Ensure it's an integer
+  console.log(`Received diffDays: ${diffDays}`);
+
+  const query = `
+    SELECT  
+      date_, 
+      client, 
+      qa_name, 
+      campaign_id, 
+      end_client_name, 
+      COUNT(*) AS total_records
+    FROM 
+      public.quality_qualified
+    WHERE
+      TO_DATE(date_, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '${diffDays} days'
+    GROUP BY 
+      date_, 
+      client, 
+      qa_name, 
+      campaign_id, 
+      end_client_name
+    
+    ORDER BY 
+      date_ ASC, 
+      client ASC, 
+      qa_name ASC, 
+      campaign_id ASC, 
+      end_client_name ASC
+  `;
+
+  console.log("Given query for fetching QQ report data:", query);
+
+  try {
+    await testConnection();
+    const result = await pool.query(query);
+    console.log('Query Result:', result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error executing query:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 
 
-module.exports = { getReportData, getLeadDataForDay };
+
+module.exports = { getReportData, getLeadDataForDay, getQQLeadDataForDay , getQQReportData};

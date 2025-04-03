@@ -12,6 +12,8 @@ app.use(express.json());
 // Routes
 app.get('/report', reportController.getReportData);
 app.get('/report/lead-data', reportController.getLeadDataForDay );
+app.get('/qqreport', reportController.getQQReportData);
+app.get('/report/qqlead-data', reportController.getQQLeadDataForDay );
 
 // Start server
 app.listen(port, () => {

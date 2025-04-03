@@ -63,7 +63,7 @@ async function checkDatabase(
   dateFilter,
   linkedinLink,
   end_client_name,
-  
+  username
 ) {
   const client = await pool.connect();
   try {
@@ -155,6 +155,10 @@ FROM (
 ) AS subquery
 LIMIT 1;
     `;
+
+    logger.info(
+        `${username} - checking QQ lead : email=${email}, left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+      );
 
     const formattedDate = formatDateForDatabase(dateFilter);
     console.log('Using date for query:', formattedDate);
@@ -328,7 +332,8 @@ async function processFile(username, filePath, clientCode, dateFilter, end_clien
         clientCode,
         formattedDate,
         linkedinLink,
-        end_client_name || 'NULL'  // Pass 'NULL' as a string if empty
+        end_client_name || 'NULL',
+        username
       );
 
       // Update the row with results
@@ -497,6 +502,10 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
     FROM filtered_campaigns
     LIMIT 1;
     `;
+
+    logger.info(
+      `${username} - checking QQ All Client Code lead : email=${email},Date= ${formattedDate} ,left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+    );
 
     const dbResult = await pool.query(dynamicQuery, [
       calculatedLeft3,
@@ -712,7 +721,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
 
      // Log the lead check
      logger.info(
-      `${username} - checking MSFT lead ${i - 1}: email=${email}, left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
+      `${username} - checking QQ MSFT lead ${i - 1}: email=${email}, Date= ${formattedDate},left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
     );
 
     row.commit();

@@ -114,11 +114,15 @@ async function processAllSuppression(req, res) {
 
         // Validate and format date
         const leadDate = req.body.leadDate;
+        const qualityleadDate = req.body.qualityleadDate;
+
         if (!leadDate) {
             return res.status(400).json({ success: false, error: 'Lead date is required' });
         }
         
-        const formattedDate = formatDate(leadDate); // Add day part for parsing
+        const formattedDate = formatDate(leadDate);
+        const qualityformattedDate = formatDate(qualityleadDate); // Add day part for parsing
+
         console.log(`Formatted date: ${formattedDate}`);
 
         // Validate client codes
@@ -226,7 +230,7 @@ async function processAllSuppression(req, res) {
 
                 logger.info(`${username} checked Quality suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, clientCode=${qualityClientCode}, endClient=${rowData.companyname}`);
 
-                console.log(`Using date for query: ${formattedDate}`);
+                console.log(`Using date for query: ${qualityformattedDate}`);
                 
                 if (qualityClientCode === 'MSFT') {
                     const mockReq = {
@@ -234,7 +238,7 @@ async function processAllSuppression(req, res) {
                             ...rowData,
                             email: rowData.emailid,
                             end_client_name: rowData.companyname,
-                            dateFilter: formattedDate
+                            dateFilter: qualityformattedDate
                         }
                     };
                     suppressionResult = await qualityProcessSingleEntry(mockReq, mockRes);
@@ -404,31 +408,32 @@ async function processAllSuppression(req, res) {
             };
 
             // Calculate Final Status based on selected suppressions
-let finalStatus = 'Unmatch';
+let finalStatus = '';
 
 // Master Suppression: Match if Master Date Status is "Still Suppressed"
 if (isMaster && combinedResult['Master Date Status'] === 'Master: Still Suppressed') {
-    finalStatus = 'Match';
+
+    finalStatus = finalStatus + 'Master Match | ';
 }
 
 // Quality Suppression: Match if Quality Date Status is "Still Suppressed"
 if (isQuality && combinedResult['Quality Date Status'] === 'Quality: Still Suppressed') {
-    finalStatus = 'Match';
+    finalStatus = finalStatus + 'QQ Match | ';
 }
 
 // Global Email: Direct match check
 if (isGlobal && combinedResult['Global Email Status'] === 'Global: Match') {
-    finalStatus = 'Match';
+    finalStatus = finalStatus + 'Global Email Match | ';
 }
 
 // Invalid Email: Direct match check
 if (isInvalid && combinedResult['Invalid Email Status'] === 'Invalid: Match') {
-    finalStatus = 'Match';
+    finalStatus = finalStatus + 'Invalid Email Match | ';
 }
 
 // TPCCTPS: Direct match check
 if (isTPCCTPSSupression && combinedResult['TPCCTPS Status'] === 'TPCCTPS Status: Match') {
-    finalStatus = 'Match';
+    finalStatus = finalStatus + 'TPCCTPS Match | ';
 }
 
 // DNC: Check if any DNC column is "Match"
@@ -441,20 +446,24 @@ if (isDNC) {
         'DNC DNC Domain Status'
     ];
     if (dncColumns.some(col => combinedResult[col] === 'DNC: Match')) {
-        finalStatus = 'Match';
+        finalStatus = finalStatus + 'DNC Match | ';
     }
 }
 
 // TE16Msft Domain: Direct match check
 if (isTE16MsftDomain && combinedResult['TE16Msft Domain Status'] === 'TE16Msft: Match') {
-    finalStatus = 'Match';
+    ffinalStatus = finalStatus +'TE16Msft Accept All Domain Match | ';
 }
 
 // MSFT: Check Client or Domain match
 if (isMsftSuppression) {
     if (combinedResult['MSFT Client Status'] === 'MSFT: Match' || combinedResult['MSFT Domain Status'] === 'MSFT: Match') {
-        finalStatus = 'Match';
+        finalStatus = finalStatus + 'MSFT Client or Domain Match | ';
     }
+}
+
+if(finalStatus === '') {
+    finalStatus = "Unmatch";
 }
 
 // Add Final Status to the result

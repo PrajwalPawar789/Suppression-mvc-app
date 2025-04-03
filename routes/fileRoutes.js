@@ -70,35 +70,35 @@ router.get('/insert', (req, res, next) => {
     'kumar.desai',
     'om.khene',
     'ankita.tope',
-  	'Tejas.Bhausaheb',
-  	'Rushikesh.Patil',
-  	'Nikita.Tumsare',
-  	'Roshan.Lakade',
-  	'Akash.Yadav',
-  	'aryansingh.thakur',
-  	'Gauri.Chauhan',
-  	'Mohit.Ranparia',
-  	'Gajanan.Jadhav',
-  	'Prashant.Jagtap',
-  	'Amruta.Gosavi',
-  	'Rohit.Adake',
-  	'Jakir.Shaikh',
-  	'Hujaifa.Patil',
-  	'AVES.MULLA',
-  	'MUSKAN.DESAI',
-  	'Somnath.Gore',
-  	'Akash.Panchal',
-  	'Shivshankar.Chandane',
-  	'Akshay.Mowade',
-  	'prasad.chavan',
-  	'SWAPNIL.MAHSKE',
-  	'Mustafa.Nadaf',
-	'Divyanshu.Thakre',
-	'Rohit.Patil',
-	'Anikesh.Wankhade',
-	'Saurabh.Pandey'
+    'Tejas.Bhausaheb',
+    'Rushikesh.Patil',
+    'Nikita.Tumsare',
+    'Roshan.Lakade',
+    'Akash.Yadav',
+    'aryansingh.thakur',
+    'Gauri.Chauhan',
+    'Mohit.Ranparia',
+    'Gajanan.Jadhav',
+    'Prashant.Jagtap',
+    'Amruta.Gosavi',
+    'Rohit.Adake',
+    'Jakir.Shaikh',
+    'Hujaifa.Patil',
+    'AVES.MULLA',
+    'MUSKAN.DESAI',
+    'Somnath.Gore',
+    'Akash.Panchal',
+    'Shivshankar.Chandane',
+    'Akshay.Mowade',
+    'prasad.chavan',
+    'SWAPNIL.MAHSKE',
+    'Mustafa.Nadaf',
+    'Divyanshu.Thakre',
+    'Rohit.Patil',
+    'Anikesh.Wankhade',
+    'Saurabh.Pandey'
   ];
-  
+
   if (req.session.isAuthenticated && allowedUsernames.includes(req.session.username)) {
     res.render('insertsuppressiondata');
   } else {
@@ -108,9 +108,33 @@ router.get('/insert', (req, res, next) => {
 
 router.get('/insert-qalityqualify', (req, res, next) => {
   const allowedUsernames = [
-    'prajwal.pawar'
+    'prajwal.pawar',
+    'Gayatri.Shimpi',
+    'Anjumartha.Fernandes',
+    'Prajakta.Suryawanshi',
+    'Sufiyaan.Mulla',
+    'Mrunali.Nawle',
+    'Shrikant.Adhe',
+    'Prem.Rajput',
+    'Chaitanya.Jadhav',
+    'Balaji.Gangawane',
+    'Ravi.Sharma',
+    'Yunus.Qureshi',
+    'Prasad.Dhumal',
+    'Krutika.Thorat',
+    'Akanksha.Patankar',
+    'Arun.Giri',
+    'Vikas.Bhartee',
+    'Harsh.Rawal',
+    'Sonu.Shandilya',
+    'Sarthak.Babar',
+    'Rohan.Awachite',
+    'Rupesh.Patil',
+    'Sahil.Shaikh',
+    'Shwetlana.Patil',
+    'Shoaib.Mulani'
   ];
-  
+
   if (req.session.isAuthenticated && allowedUsernames.includes(req.session.username)) {
     res.render('insertsuppressiondataQualityQualify');
   } else {
@@ -127,12 +151,12 @@ router.get('/checkemail', isAuthenticated, (req, res) => {
 
 
 router.get('/login', (req, res) => {
-  
+
   res.render('login');
 });
 
 // router.get('/all_suppression_check', (req, res) => {
-  
+
 //   res.render('all_suppression_check')
 // })
 
@@ -146,45 +170,45 @@ router.get('/dashboard', isAuthenticated, (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to logout' });
-      }
-      res.redirect('/login');
-    });
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to logout' });
+    }
+    res.redirect('/login');
   });
+});
 
-  router.get('/invalidemailcheck', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('invalidemailcheck');
-  });
+router.get('/invalidemailcheck', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('invalidemailcheck');
+});
 
-  router.get('/TPC&CTPS-Supression', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('TPC&CTPSSupression');
-  });
+router.get('/TPC&CTPS-Supression', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('TPC&CTPSSupression');
+});
 
-  router.get('/TE16_MSFT_Accept_all_domain_suppression', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('TE16_MSFT_Accept_all_domain_suppression');
-  });
-  
-  router.get('/DeadContact-Supression', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('DeadContact');
-  });
+router.get('/TE16_MSFT_Accept_all_domain_suppression', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('TE16_MSFT_Accept_all_domain_suppression');
+});
 
-  router.get('/globalemailsuppression', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('globalemailsuppression');
-  });
+router.get('/DeadContact-Supression', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('DeadContact');
+});
 
-  router.get('/dncsuppression', isAuthenticated, (req, res) => {
-    // console.log(req.session.username);
-    res.render('dncsuppression');
-  });
+router.get('/globalemailsuppression', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('globalemailsuppression');
+});
 
-  router.get('/report', isAuthenticated, reportController.getReportData);
+router.get('/dncsuppression', isAuthenticated, (req, res) => {
+  // console.log(req.session.username);
+  res.render('dncsuppression');
+});
+
+router.get('/report', isAuthenticated, reportController.getReportData);
 
 router.post('/check-database', fileController.checkDatabaseAPI);
 
@@ -271,7 +295,7 @@ router.post('/msft_domain_suppression', async (req, res) => {
   }
 });
 
-router.post('/master-msft', fileController.processSingleEntry); 
+router.post('/master-msft', fileController.processSingleEntry);
 
 router.post('/qq-msft', quality_qualifiedController.processSingleEntry);
 
@@ -312,9 +336,9 @@ router.post('/TPC&CTPSSupression', async (req, res) => {
 // Add the new route for LinkedIn link query
 router.post('/linkedin-link', async (req, res) => {
   try {
-      await linkedinLinkController.linkedinLinkApi(req, res); // Call the controller method
+    await linkedinLinkController.linkedinLinkApi(req, res); // Call the controller method
   } catch (error) {
-      res.status(500).json({ error: 'An unexpected error occurred' });
+    res.status(500).json({ error: 'An unexpected error occurred' });
   }
 });
 
@@ -348,26 +372,26 @@ router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppre
 
 // Replace with single route definitions
 router.get('/all_suppression_check', isAuthenticated, (req, res) => {
-    res.render('all_suppression_check');
+  res.render('all_suppression_check');
 });
 
-router.post('/all-suppression-check',isAuthenticated, upload.single('file'), allSuppressionController.processAllSuppression);
+router.post('/all-suppression-check', isAuthenticated, upload.single('file'), allSuppressionController.processAllSuppression);
 
 // Add this route before module.exports
 router.get('/download/:filename', (req, res) => {
-    const filename = path.basename(req.params.filename);
-    const filepath = path.join(__dirname, '../uploads', filename);
-    
-    res.download(filepath, 'suppression_results.xlsx', (err) => {
-        if (err) {
-            console.error('Error downloading file:', err);
-            res.status(500).send('Error downloading file');
-        }
-        // Clean up: delete the file after sending
-        fs.unlink(filepath, (unlinkErr) => {
-            if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
-        });
+  const filename = path.basename(req.params.filename);
+  const filepath = path.join(__dirname, '../uploads', filename);
+
+  res.download(filepath, 'suppression_results.xlsx', (err) => {
+    if (err) {
+      console.error('Error downloading file:', err);
+      res.status(500).send('Error downloading file');
+    }
+    // Clean up: delete the file after sending
+    fs.unlink(filepath, (unlinkErr) => {
+      if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
     });
+  });
 });
 
 module.exports = router;

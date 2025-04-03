@@ -51,7 +51,7 @@ function formatDateForDatabase(dateStr) {
       console.log('Invalid date input:', dateStr);
       return '23-Sep-24';
     }
-    
+
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const formattedDate = `${String(date.getDate()).padStart(2, '0')}-${months[date.getMonth()]}-${String(date.getFullYear()).slice(-2)}`;
     console.log('Formatted date:', formattedDate);
@@ -71,8 +71,14 @@ async function checkDatabase(
   dateFilter,
   linkedinLink,
   end_client_name,
-  
+  username
+
 ) {
+
+  logger.info(
+    `${username} - checking Master lead : email=${email}, left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+  );
+
   const client = await pool.connect();
   try {
     const query = `
@@ -309,10 +315,10 @@ async function processFile(username, filePath, clientCode, dateFilter, end_clien
     for (let i = 2; i <= worksheet.rowCount; i++) {
       const row = worksheet.getRow(i);
       // Check if row is empty
-      if (!row.getCell(emailIndex).value && 
-          !row.getCell(firstNameIndex).value && 
-          !row.getCell(lastNameIndex).value && 
-          !row.getCell(companyIndex).value) {
+      if (!row.getCell(emailIndex).value &&
+        !row.getCell(firstNameIndex).value &&
+        !row.getCell(lastNameIndex).value &&
+        !row.getCell(companyIndex).value) {
         continue; // Skip empty rows
       }
 
@@ -336,7 +342,8 @@ async function processFile(username, filePath, clientCode, dateFilter, end_clien
         clientCode,
         formattedDate,
         linkedinLink,
-        end_client_name || 'NULL'  // Pass 'NULL' as a string if empty
+        end_client_name || 'NULL',
+        username
       );
 
       // Update the row with results
@@ -433,12 +440,12 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
-    
+
     // Check if row is empty
-    if (!row.getCell(emailIndex).value && 
-        !row.getCell(firstNameIndex).value && 
-        !row.getCell(lastNameIndex).value && 
-        !row.getCell(companyIndex).value) {
+    if (!row.getCell(emailIndex).value &&
+      !row.getCell(firstNameIndex).value &&
+      !row.getCell(lastNameIndex).value &&
+      !row.getCell(companyIndex).value) {
       continue; // Skip empty rows
     }
 
@@ -505,6 +512,10 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
     FROM filtered_campaigns
     LIMIT 1;
     `;
+
+    logger.info(
+      `${username} - checking Master All client lead ${i - 1}: email=${email},dateFilter = ${formattedDate} ,left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
+    );
 
     const dbResult = await pool.query(dynamicQuery, [
       calculatedLeft3,
@@ -606,12 +617,12 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
 
   for (let i = 2; i <= worksheet.rowCount; i++) {
     const row = worksheet.getRow(i);
-    
+
     // Check if row is empty
-    if (!row.getCell(emailIndex).value && 
-        !row.getCell(firstNameIndex).value && 
-        !row.getCell(lastNameIndex).value && 
-        !row.getCell(companyIndex).value) {
+    if (!row.getCell(emailIndex).value &&
+      !row.getCell(firstNameIndex).value &&
+      !row.getCell(lastNameIndex).value &&
+      !row.getCell(companyIndex).value) {
       continue; // Skip empty rows
     }
 
@@ -718,9 +729,9 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
     row.getCell(endClientNameStatusColumn.number).value = dbResult.rows[0].end_client_name_status;
 
 
-     // Log the lead check
-     logger.info(
-      `${username} - checking MSFT lead ${i - 1}: email=${email}, left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
+    // Log the lead check
+    logger.info(
+      `${username} - checking Master MSFT lead ${i - 1}: email=${email}, Date= ${formattedDate}, left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
     );
 
     row.commit();
@@ -742,7 +753,7 @@ async function processSingleEntry(req, res) {
   const calculatedLeft3 = `${firstname.substring(0, 3)}${lastname.substring(0, 3)}${companyname.substring(0, 3)}`;
   const calculatedLeft4 = `${firstname.substring(0, 4)}${lastname.substring(0, 4)}${companyname.substring(0, 4)}`;
 
-// console.log("Logging left_3 and left_4", left_3, left_4);
+  // console.log("Logging left_3 and left_4", left_3, left_4);
 
   const dynamicQueryMSFT = `
     WITH data AS (
@@ -934,12 +945,12 @@ async function processSingleAllClient({ firstname, lastname, companyname, phonen
     console.log("Query executed.");
 
     if (dbResult.rows.length === 0) {
-      return { 
-        dateStatus: 'Fresh Lead GTG', 
-        matchStatus: 'Unmatch', 
-        emailStatus: 'Unmatch', 
-        clientCodeStatus: 'Unmatch', 
-        linkedinLinkStatus: 'Unmatch' 
+      return {
+        dateStatus: 'Fresh Lead GTG',
+        matchStatus: 'Unmatch',
+        emailStatus: 'Unmatch',
+        clientCodeStatus: 'Unmatch',
+        linkedinLinkStatus: 'Unmatch'
       };
     }
 
@@ -967,25 +978,25 @@ module.exports = {
   processFileDynamicQueryMSFT,
   uploadFile: async (req, res) => {
     const username = req.session.username || 'Anonymous';
-  
+
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
-  
+
     if (!req.file.originalname.endsWith(".xlsx")) {
       return res.status(400).send("Uploaded file is not an Excel file.");
     }
-  
+
     const clientCode = req.body.clientCode;
     const dateFilter = req.body.dateFilter;
     const end_client_name = req.body.end_client_name;
-  
+
     console.log('Date received in controller:', dateFilter);
-  
+
     try {
       console.log("Processing file for client code:", clientCode);
       let result;
-  
+
       if (clientCode === "All") {
         result = await processFileDynamicQuery(username, req.file.path, dateFilter);
       } else if (clientCode === "MSFT") {

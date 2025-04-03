@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>All Suppression Check</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -85,160 +86,164 @@
         }
 
         /* Summary Header */
-.summary-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+        .summary-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
 
-.summary-header h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-}
+        .summary-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
 
-.total-records {
-    font-size: 1.2rem;
-    color: #007bff;
-}
+        .total-records {
+            font-size: 1.2rem;
+            color: #007bff;
+        }
 
-/* Suppression Grid */
-.suppression-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
+        /* Suppression Grid */
+        .suppression-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
 
-.suppression-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .suppression-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-.suppression-card h4 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    color: #007bff;
-}
+        .suppression-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
 
-/* Status Grid */
-.status-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-}
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
 
-.status-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .status-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-.status-header {
-    font-size: 1rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: #fff;
-}
+        .status-header {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
 
-.status-values {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
+        .status-values {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-.status-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
 
-.status-value {
-    color: #ccc;
-}
+        .status-value {
+            color: #ccc;
+        }
 
-.status-count {
-    color: #007bff;
-    font-weight: bold;
-}
+        .status-count {
+            color: #007bff;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
     <%- include('navbar') %>
 
-    <div class="container">
-        <h1>All Suppression Check</h1>
-        
-        <a href="/download/sample.xlsx" download class="download-sample">
-            Download Sample Excel File
-        </a>
+        <div class="container">
+            <h1>All Suppression Check</h1>
 
-        <form id="suppressionForm" action="/all-suppression-check" method="POST" enctype="multipart/form-data">
-            <!-- File Upload -->
-            <div class="form-group">
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" name="file" id="excelFile" required accept=".csv,.xlsx,.xls">
-                    <label class="custom-file-label" for="excelFile">Choose Excel File</label>
+            <a href="/download/sample.xlsx" download class="download-sample">
+                Download Sample Excel File
+            </a>
+
+            <form id="suppressionForm" action="/all-suppression-check" method="POST" enctype="multipart/form-data">
+                <!-- File Upload -->
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="file" id="excelFile" required
+                            accept=".csv,.xlsx,.xls">
+                        <label class="custom-file-label" for="excelFile">Choose Excel File</label>
+                    </div>
+                    <small class="form-text text-muted">Required columns: First Name, Last Name, Email ID, Company Name,
+                        Phone, LinkedinLink, Domain</small>
                 </div>
-                <small class="form-text text-muted">Required columns: First Name, Last Name, Email ID, Company Name, Phone, LinkedinLink, Domain</small>
-            </div>
 
-            <!-- Client Codes -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Master Client Code</label>
-                        <select class="form-control" name="masterClientCode" required>
-                            <option value="">Select Master Code</option>
-                            <option value="All">All (Excluding HN36)</option>
-                            <option value="MSFT">MSFT</option>
-                            <option value="TE72">TE72</option>
-                            <option value="AR13">AR13</option>
-                            <option value="TE16">TE16</option>
-                            <option value="DI31">DI31</option>
-                            <option value="HN36">HN36</option>
-                            <option value="AD62">AD62</option>
-                            <option value="AN12">AN12</option>
-                            <option value="DY78">DY78</option>
-                            <option value="MA99">MA99</option>
-                            <option value="NT26">NT26</option>
-                            <option value="UE88">UE88</option>
-                        </select>
+                <!-- Client Codes -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Master Client Code</label>
+                            <select class="form-control" name="masterClientCode" required>
+                                <option value="">Select Master Code</option>
+                                <option value="All">All (Excluding HN36)</option>
+                                <option value="MSFT">MSFT</option>
+                                <option value="TE72">TE72</option>
+                                <option value="AR13">AR13</option>
+                                <option value="TE16">TE16</option>
+                                <option value="DI31">DI31</option>
+                                <option value="HN36">HN36</option>
+                                <option value="AD62">AD62</option>
+                                <option value="AN12">AN12</option>
+                                <option value="DY78">DY78</option>
+                                <option value="MA99">MA99</option>
+                                <option value="NT26">NT26</option>
+                                <option value="UE88">UE88</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Quality Client Code</label>
+                            <select class="form-control" name="qualityClientCode" required>
+                                <option value="">Select Quality Code</option>
+                                <option value="MSFT">MSFT</option>
+                                <option value="TE72">TE72</option>
+                                <option value="AR13">AR13</option>
+                                <option value="TE16">TE16</option>
+                                <option value="DI31">DI31</option>
+                                <option value="HN36">HN36</option>
+                                <option value="AD62">AD62</option>
+                                <option value="AN12">AN12</option>
+                                <option value="DY78">DY78</option>
+                                <option value="MA99">MA99</option>
+                                <option value="NT26">NT26</option>
+                                <option value="UE88">UE88</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+
+                <!-- Date Input -->
+                <div class="form-group">
+                    <label>Master Lead Date / Month</label>
+                    <input type="date" class="form-control" name="leadDate" required
+                        style="background-color: #333; color: #fff; border: 1px solid #444;">
+
+                    <label>Quality Lead Date / Month</label>
+                    <input type="date" class="form-control" name="qualityleadDate" required
+                        style="background-color: #333; color: #fff; border: 1px solid #444;">
+
                     <div class="form-group">
-                        <label>Quality Client Code</label>
-                        <select class="form-control" name="qualityClientCode" required>
-                            <option value="">Select Quality Code</option>
-                            <option value="MSFT">MSFT</option>
-                            <option value="TE72">TE72</option>
-                            <option value="AR13">AR13</option>
-                            <option value="TE16">TE16</option>
-                            <option value="DI31">DI31</option>
-                            <option value="HN36">HN36</option>
-                            <option value="AD62">AD62</option>
-                            <option value="AN12">AN12</option>
-                            <option value="DY78">DY78</option>
-                            <option value="MA99">MA99</option>
-                            <option value="NT26">NT26</option>
-                            <option value="UE88">UE88</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Date Input -->
-            <div class="form-group">
-                <label>Lead Date / Month</label>
-                <input type="date" 
-                       class="form-control" 
-                       name="leadDate" 
-                       required
-                       style="background-color: #333; color: #fff; border: 1px solid #444;">
-
-                       <div class="form-group">
                         <label>End Client firstName</label>
                         <select class="form-control" name="end_client_name" required>
                             <option value="">Select End Client Name</option>
@@ -246,276 +251,293 @@
                             <option value="Robinson">Robinson</option>
                         </select>
                     </div>
-            </div>
+                </div>
 
-            <!-- Suppression Checks -->
-            <div class="suppression-checks">
-                <h4 class="mb-4">Select Suppression Types</h4>
-                <div class="checkbox-grid">
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="masterSuppression" 
-                                   id="masterSuppression">
-                            <label class="custom-control-label" for="masterSuppression">
-                                Master Suppression
-                            </label>
+                <!-- Suppression Checks -->
+                <div class="suppression-checks">
+                    <h4 class="mb-4">Select Suppression Types</h4>
+                    <div class="checkbox-grid">
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="masterSuppression" id="masterSuppression">
+                                <label class="custom-control-label" for="masterSuppression">
+                                    Master Suppression
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="qualitySuppression" id="qualitySuppression">
+                                <label class="custom-control-label" for="qualitySuppression">
+                                    Quality Qualified Suppression
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="deadContact" id="deadContact">
+                                <label class="custom-control-label" for="deadContact">
+                                    DNC (Email, Company, Domain)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="invalidemail" id="invalidemail">
+                                <label class="custom-control-label" for="invalidemail">
+                                    Invalid Email Check
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="globalEmailSuppression" id="globalEmailSuppression">
+                                <label class="custom-control-label" for="globalEmailSuppression">
+                                    TE16 Global Email Suppression
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="te16MsftDomain" id="te16MsftDomain">
+                                <label class="custom-control-label" for="te16MsftDomain">
+                                    TE16 MSFT Accept-all Domain
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="msftSuppression" id="msftSuppression">
+                                <label class="custom-control-label" for="msftSuppression">
+                                    MSFT Suppression
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="custom-checkbox">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" name="suppressionTypes"
+                                    value="tpcctpsSuppression" id="tpcctpsSuppression">
+                                <label class="custom-control-label" for="tpcctpsSuppression">
+                                    TPCCTPS Suppression (Phone)
+                                </label>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="qualitySuppression" 
-                                   id="qualitySuppression">
-                            <label class="custom-control-label" for="qualitySuppression">
-                                Quality Qualified Suppression
-                            </label>
-                        </div>
+                <!-- Loader -->
+                <div id="loader" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
+                    <p class="mt-2">Processing your file...</p>
+                </div>
 
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="deadContact" 
-                                   id="deadContact">
-                            <label class="custom-control-label" for="deadContact">
-                                DNC (Email, Company, Domain)
-                            </label>
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
+                    Run Suppression Checks
+                </button>
+            </form>
+
+            <!-- Results Section -->
+            <div id="results" class="mt-5" style="display: none;">
+                <div class="card bg-dark text-white">
+                    <div class="card-body">
+                        <h3 class="card-title">Results</h3>
+                        <div id="downloadSection" style="display: none;">
+                            <a id="downloadLink" href="#" class="btn btn-success mb-3">
+                                <i class="fas fa-download"></i> Download Results
+                            </a>
                         </div>
-                    </div>
-
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="invalidemail" 
-                                   id="invalidemail">
-                            <label class="custom-control-label" for="invalidemail">
-                                Invalid Email Check
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="globalEmailSuppression" 
-                                   id="globalEmailSuppression">
-                            <label class="custom-control-label" for="globalEmailSuppression">
-                                TE16 Global Email Suppression
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="te16MsftDomain" 
-                                   id="te16MsftDomain">
-                            <label class="custom-control-label" for="te16MsftDomain">
-                                TE16 MSFT Accept-all Domain
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="msftSuppression" 
-                                   id="msftSuppression">
-                            <label class="custom-control-label" for="msftSuppression">
-                                MSFT Suppression
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="custom-checkbox">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" 
-                                   name="suppressionTypes" value="tpcctpsSuppression" 
-                                   id="tpcctpsSuppression">
-                            <label class="custom-control-label" for="tpcctpsSuppression">
-                                TPCCTPS Suppression (Phone)
-                            </label>
+                        <div id="resultsContent">
+                            <!-- Summary Report -->
+                            <div class="summary-header mb-4">
+                                <h3>Summary Report</h3>
+                                <div class="total-records">Total Records: <span id="totalRecords">0</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Loader -->
-            <div id="loader" style="display: none;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <p class="mt-2">Processing your file...</p>
-            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    // Get the select elements - access first element of NodeList using [0]
+                    const masterSelectElement = document.getElementsByName('masterClientCode')[0];
+                    const qualitySelectElement = document.getElementsByName('qualityClientCode')[0];
+            
+                    // Get the checkbox elements
+                    const masterCheckboxElement = document.getElementById('masterSuppression');
+                    const qualityCheckboxElement = document.getElementById('qualitySuppression');
+            
+                    function toggleCheckbox(selectElement, checkboxElement) {
+                        // Check the actual select element's value
+                        checkboxElement.checked = selectElement.value !== "";
+                    }
+            
+                    // Event listeners for both dropdowns
+                    masterSelectElement.addEventListener('change', () => toggleCheckbox(masterSelectElement, masterCheckboxElement));
+                    qualitySelectElement.addEventListener('change', () => toggleCheckbox(qualitySelectElement, qualityCheckboxElement));
+            
+                    // Initial check
+                    toggleCheckbox(masterSelectElement, masterCheckboxElement);
+                    toggleCheckbox(qualitySelectElement, qualityCheckboxElement);
+                });
+            </script>
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
-                Run Suppression Checks
-            </button>
-        </form>
+            <script>
+                // File Input Handling
+                document.getElementById('excelFile').addEventListener('change', function (e) {
+                    const fileName = e.target.files[0].name;
+                    document.querySelector('.custom-file-label').textContent = fileName;
+                });
 
-        <!-- Results Section -->
-        <div id="results" class="mt-5" style="display: none;">
-            <div class="card bg-dark text-white">
-                <div class="card-body">
-                    <h3 class="card-title">Results</h3>
-            <div id="downloadSection" style="display: none;">
-                <a id="downloadLink" href="#" class="btn btn-success mb-3">
-                    <i class="fas fa-download"></i> Download Results
-                </a>
-            </div>
-            <div id="resultsContent">
-                <!-- Summary Report -->
-                <div class="summary-header mb-4">
-                    <h3>Summary Report</h3>
-                    <div class="total-records">Total Records: <span id="totalRecords">0</span></div>
-                </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                // Form Submission
+                document.getElementById('suppressionForm').onsubmit = function (e) {
+                    e.preventDefault();
 
-    <script>
-    // File Input Handling
-    document.getElementById('excelFile').addEventListener('change', function(e) {
-        const fileName = e.target.files[0].name;
-        document.querySelector('.custom-file-label').textContent = fileName;
-    });
+                    // Show loader
+                    document.getElementById('loader').style.display = 'block';
+                    document.getElementById('results').style.display = 'none';
+                    document.getElementById('downloadSection').style.display = 'none';
 
-    // Form Submission
-    document.getElementById('suppressionForm').onsubmit = function(e) {
-        e.preventDefault();
-        
-        // Show loader
-        document.getElementById('loader').style.display = 'block';
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('downloadSection').style.display = 'none';
+                    const formData = new FormData(this);
 
-        const formData = new FormData(this);
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            document.getElementById('loader').style.display = 'none';
 
-        fetch(this.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('loader').style.display = 'none';
+                            if (data.success) {
+                                // Show download button
+                                const downloadLink = document.getElementById('downloadLink');
+                                downloadLink.href = `/uploads/${data.outputFile}`;
+                                document.getElementById('downloadSection').style.display = 'block';
 
-            if (data.success) {
-                // Show download button
-                const downloadLink = document.getElementById('downloadLink');
-                downloadLink.href = `/uploads/${data.outputFile}`;
-                document.getElementById('downloadSection').style.display = 'block';
+                                // Display results
+                                document.getElementById('results').style.display = 'block';
+                                const resultsContent = document.getElementById('resultsContent');
+                                const summaryReport = data.summaryReport;
 
-                // Display results
-                document.getElementById('results').style.display = 'block';
-                const resultsContent = document.getElementById('resultsContent');
-                const summaryReport = data.summaryReport;
+                                console.log('Summary Report:', summaryReport); // Log the summary report
 
-                console.log('Summary Report:', summaryReport); // Log the summary report
-                
-                // Build summary display
-                let summaryHTML = `
+                                // Build summary display
+                                let summaryHTML = `
                     <div class="summary-header">
                         <h3>Summary Report</h3>
                         <div class="total-records">Total Records: ${summaryReport.totalRecords}</div>
                     </div>
                     <div class="suppression-grid">`;
 
-                // Add Master Suppression if present
-                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
-                    summaryHTML += `
+                                // Add Master Suppression if present
+                                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
+                                    summaryHTML += `
                         <div class="suppression-card master">
                             <h4>Master Suppression</h4>
                             <div class="status-grid">
                                 ${renderStatusGrid('Master', summaryReport.statusCounts)}
                             </div>
                         </div>`;
-                }
+                                }
 
-                // Add Quality Suppression if present
-                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
-                    summaryHTML += `
+                                // Add Quality Suppression if present
+                                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
+                                    summaryHTML += `
                         <div class="suppression-card quality">
                             <h4>Quality Qualify Suppression</h4>
                             <div class="status-grid">
                                 ${renderStatusGrid('Quality', summaryReport.statusCounts)}
                             </div>
                         </div>`;
-                }
+                                }
 
-                // Add Global Suppression summary
-                if (summaryReport.statusCounts['Global Email Status']) {
-    summaryHTML += `
+                                // Add Global Suppression summary
+                                if (summaryReport.statusCounts['Global Email Status']) {
+                                    summaryHTML += `
         <div class="suppression-card global">
             <h4>Global Email Suppression</h4>
             <div class="status-grid">
                 ${renderGlobalStatus(summaryReport.statusCounts['Global Email Status'])}
             </div>
         </div>`;
-}
+                                }
 
-// Add Global Suppression summary
-if (summaryReport.statusCounts['Invalid Email Status']) {
-    summaryHTML += `
+                                // Add Global Suppression summary
+                                if (summaryReport.statusCounts['Invalid Email Status']) {
+                                    summaryHTML += `
         <div class="suppression-card Invalid">
             <h4>Invalid Email Suppression</h4>
             <div class="status-grid">
                 ${renderInvalidStatus(summaryReport.statusCounts['Invalid Email Status'])}
             </div>
         </div>`;
-}
+                                }
 
-// Add TPCCTPS Suppression summary
-if (summaryReport.statusCounts['TPCCTPS Status']) {
-    summaryHTML += `
+                                // Add TPCCTPS Suppression summary
+                                if (summaryReport.statusCounts['TPCCTPS Status']) {
+                                    summaryHTML += `
         <div class="suppression-card TPCCTPS">
             <h4>TPCCTPS Suppression</h4>
             <div class="status-grid">
                 ${renderTPCCTPSStatus(summaryReport.statusCounts['TPCCTPS Status'])}
             </div>
         </div>`;
-}
+                                }
 
-// In the fetch().then() handler
-if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('DNC'))) {
-    summaryHTML += `
+                                // In the fetch().then() handler
+                                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('DNC'))) {
+                                    summaryHTML += `
         <div class="suppression-card dnc">
             <h4>DNC Suppression</h4>
             <div class="status-grid">
                 ${renderDNCStatus(summaryReport.statusCounts)}
             </div>
         </div>`;
-}
+                                }
 
-if (summaryReport.statusCounts['TE16Msft Domain Status']) {
-    summaryHTML += `
+                                if (summaryReport.statusCounts['TE16Msft Domain Status']) {
+                                    summaryHTML += `
         <div class="suppression-card te16msft">
             <h4>TE16 MSFT Domain Suppression</h4>
             <div class="status-grid">
                 ${renderTE16MsftStatus(summaryReport.statusCounts['TE16Msft Domain Status'])}
             </div>
         </div>`;
-}
+                                }
 
-if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('MSFT'))) {
-    summaryHTML += `
+                                if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('MSFT'))) {
+                                    summaryHTML += `
         <div class="suppression-card msft">
             <h4>MSFT Suppression</h4>
             <div class="status-grid">
                 ${renderMSFTStatus(summaryReport.statusCounts)}
             </div>
         </div>`;
-}
+                                }
 
-// Add this new helper function
-function renderGlobalStatus(counts) {
-    return `
+                                // Add this new helper function
+                                function renderGlobalStatus(counts) {
+                                    return `
     <div class="status-card">
         <div class="status-header">Email Status</div>
         <div class="status-values">
@@ -527,10 +549,10 @@ function renderGlobalStatus(counts) {
             `).join('')}
         </div>
     </div>`;
-}
+                                }
 
-function renderTPCCTPSStatus(counts) {
-    return `
+                                function renderTPCCTPSStatus(counts) {
+                                    return `
     <div class="status-card">
         <div class="status-header">TPCCTPS Status</div>
         <div class="status-values">
@@ -542,20 +564,20 @@ function renderTPCCTPSStatus(counts) {
             `).join('')}
         </div>
     </div>`;
-}
+                                }
 
-function renderDNCStatus(statusCounts) {
-    const dncStatuses = [
-        'DNC Email Status',
-        'DNC Company Status',
-        'DNC Domain Status',
-        'DNC DNC Company Status',
-        'DNC DNC Domain Status'
-    ];
+                                function renderDNCStatus(statusCounts) {
+                                    const dncStatuses = [
+                                        'DNC Email Status',
+                                        'DNC Company Status',
+                                        'DNC Domain Status',
+                                        'DNC DNC Company Status',
+                                        'DNC DNC Domain Status'
+                                    ];
 
-    return dncStatuses.map(statusKey => {
-        const counts = statusCounts[statusKey] || {};
-        return `
+                                    return dncStatuses.map(statusKey => {
+                                        const counts = statusCounts[statusKey] || {};
+                                        return `
             <div class="status-card">
                 <div class="status-header">${statusKey.replace('DNC ', '')}</div>
                 <div class="status-values">
@@ -567,11 +589,11 @@ function renderDNCStatus(statusCounts) {
                     `).join('')}
                 </div>
             </div>`;
-    }).join('');
-}
+                                    }).join('');
+                                }
 
-function renderTE16MsftStatus(counts) {
-    return `
+                                function renderTE16MsftStatus(counts) {
+                                    return `
     <div class="status-card">
         <div class="status-header">Domain Status</div>
         <div class="status-values">
@@ -583,17 +605,17 @@ function renderTE16MsftStatus(counts) {
             `).join('')}
         </div>
     </div>`;
-}
+                                }
 
-function renderMSFTStatus(statusCounts) {
-    const msftStatuses = [
-        'MSFT Client Status',
-        'MSFT Domain Status'
-    ];
+                                function renderMSFTStatus(statusCounts) {
+                                    const msftStatuses = [
+                                        'MSFT Client Status',
+                                        'MSFT Domain Status'
+                                    ];
 
-    return msftStatuses.map(statusKey => {
-        const counts = statusCounts[statusKey] || {};
-        return `
+                                    return msftStatuses.map(statusKey => {
+                                        const counts = statusCounts[statusKey] || {};
+                                        return `
             <div class="status-card">
                 <div class="status-header">${statusKey.replace('MSFT ', '')}</div>
                 <div class="status-values">
@@ -605,12 +627,12 @@ function renderMSFTStatus(statusCounts) {
                     `).join('')}
                 </div>
             </div>`;
-    }).join('');
-}
+                                    }).join('');
+                                }
 
-// Add this new helper function
-function renderInvalidStatus(counts) {
-    return `
+                                // Add this new helper function
+                                function renderInvalidStatus(counts) {
+                                    return `
     <div class="status-card">
         <div class="status-header">Email Status</div>
         <div class="status-values">
@@ -622,36 +644,36 @@ function renderInvalidStatus(counts) {
             `).join('')}
         </div>
     </div>`;
-}
+                                }
 
-                summaryHTML += `</div>`; // Close suppression-grid
+                                summaryHTML += `</div>`; // Close suppression-grid
 
-                resultsContent.innerHTML = summaryHTML;
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('loader').style.display = 'none';
-            alert('An error occurred: ' + error.message);
-        });
+                                resultsContent.innerHTML = summaryHTML;
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            document.getElementById('loader').style.display = 'none';
+                            alert('An error occurred: ' + error.message);
+                        });
 
-        // Function to render status grid
-function renderStatusGrid(prefix, statusCounts) {
-    const statusOrder = [
-        'Match Status',
-        'Client Code Status',
-        'Date Status',
-        'Email Status',
-        'End Client Status'
-    ];
+                    // Function to render status grid
+                    function renderStatusGrid(prefix, statusCounts) {
+                        const statusOrder = [
+                            'Match Status',
+                            'Client Code Status',
+                            'Date Status',
+                            'Email Status',
+                            'End Client Status'
+                        ];
 
-    return statusOrder.map(statusType => {
-        const fullKey = `${prefix} ${statusType}`;
-        const counts = statusCounts[fullKey] || {};
+                        return statusOrder.map(statusType => {
+                            const fullKey = `${prefix} ${statusType}`;
+                            const counts = statusCounts[fullKey] || {};
 
-        return `
+                            return `
             <div class="status-card">
                 <div class="status-header">${statusType}</div>
                 <div class="status-values">
@@ -663,32 +685,34 @@ function renderStatusGrid(prefix, statusCounts) {
                     `).join('')}
                 </div>
             </div>`;
-    }).join('');
-}
+                        }).join('');
+                    }
 
-// Update the results section with data
-function updateResults(data) {
-    const summaryReport = data.summaryReport;
+                    // Update the results section with data
+                    function updateResults(data) {
+                        const summaryReport = data.summaryReport;
 
-    // Update total records
-    document.getElementById('totalRecords').textContent = summaryReport.totalRecords;
+                        // Update total records
+                        document.getElementById('totalRecords').textContent = summaryReport.totalRecords;
 
-    // Render Master Suppression
-    if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
-        const masterGrid = document.getElementById('masterSuppressionGrid');
-        masterGrid.innerHTML = renderStatusGrid('Master', summaryReport.statusCounts);
-    }
+                        // Render Master Suppression
+                        if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Master'))) {
+                            const masterGrid = document.getElementById('masterSuppressionGrid');
+                            masterGrid.innerHTML = renderStatusGrid('Master', summaryReport.statusCounts);
+                        }
 
-    // Render Quality Suppression
-    if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
-        const qualityGrid = document.getElementById('qualitySuppressionGrid');
-        qualityGrid.innerHTML = renderStatusGrid('Quality', summaryReport.statusCounts);
-    }
+                        // Render Quality Suppression
+                        if (Object.keys(summaryReport.statusCounts).some(k => k.startsWith('Quality'))) {
+                            const qualityGrid = document.getElementById('qualitySuppressionGrid');
+                            qualityGrid.innerHTML = renderStatusGrid('Quality', summaryReport.statusCounts);
+                        }
 
-    // Show results section
-    document.getElementById('results').style.display = 'block';
-}
-    };
-</script>
+                        // Show results section
+                        document.getElementById('results').style.display = 'block';
+                    }
+                };
+            </script>
+            
 </body>
+
 </html>
