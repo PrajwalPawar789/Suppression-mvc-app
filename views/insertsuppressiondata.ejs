@@ -143,13 +143,13 @@
         </div>
 
         <div class="form-section">
-            <h2>DNC Company Records</h2>
+            <h2>DNC Company Suppression Records</h2>
             <div class="download-link">
                 <p>Download a sample Excel file for reference: <a href="/download/sample-dnccompany.xlsx" download class="text-info">Download Sample Excel</a></p>
             </div>
             <form action="/dnccompany" method="post" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="dncFile">DNC Company Excel File</label>
+                    <label for="dncFile">DNC Company Suppression Excel File</label>
                     <div class="custom-file">
                         <input type="file" class="custom-file-input" id="dncFile" name="dncFile" required>
                         <label class="custom-file-label" for="dncFile">Choose file</label>
@@ -160,16 +160,67 @@
         </div>
 
         <div class="form-section">
-            <h2>DNC Suppression Records</h2>
+            <h2>DNC Prospect Suppression Records</h2>
             <div class="download-link">
                 <p>Download a sample Excel file for reference: <a href="/download/sample-dnc-suppression.xlsx" download class="text-info">Download Sample Excel</a></p>
             </div>
             <form action="/dnc-suppression" method="post" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="dncSuppressionFile">DNC Suppression Excel File</label>
+                    <label for="dncSuppressionFile">DNC Prospect Suppression Excel File</label>
                     <div class="custom-file">
                         <input type="file" class="custom-file-input" id="dncSuppressionFile" name="dncSuppressionFile" required>
                         <label class="custom-file-label" for="dncSuppressionFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>TE16 MSFT Accept All Domain Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-te16_msft_accept_all_domain_suppression.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/insert_msft_accept_all_domain_suppression" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="te16MsftAcceptAllFile">TE16 MSFT Accept All Domain Suppression</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="te16MsftAcceptAllFile" name="te16MsftAcceptAllFile" required>
+                        <label class="custom-file-label" for="te16MsftAcceptAllFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>MSFT Domain Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-msft_Domain_Suppression.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/insert_Msft_Domain_Suppression" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="msftDomainSuppressionFile">MSFT Domain Suppression</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="msftDomainSuppressionFile" name="msftDomainSuppressionFile" required>
+                        <label class="custom-file-label" for="msftDomainSuppressionFile">Choose file</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>MSFT Client (Email) Records</h2>
+            <div class="download-link">
+                <p>Download a sample Excel file for reference: <a href="/download/sample-msft_Client_Suppression.xlsx" download class="text-info">Download Sample Excel</a></p>
+            </div>
+            <form action="/insert_Msft_Client_Suppression" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="msftClientSuppressionFile">MSFT Client (Email) Suppression</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="msftClientSuppressionFile" name="msftClientSuppressionFile" required>
+                        <label class="custom-file-label" for="msftClientSuppressionFile">Choose file</label>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Upload</button>
@@ -187,5 +238,5 @@
             });
         });
     </script>
-</body>
+</body> 
 </html>

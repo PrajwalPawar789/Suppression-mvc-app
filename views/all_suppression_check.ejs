@@ -163,6 +163,21 @@
             color: #007bff;
             font-weight: bold;
         }
+
+        /* Hide specific suppression checkboxes */
+#masterSuppression, 
+#qualitySuppression,
+label[for="masterSuppression"],
+label[for="qualitySuppression"] {
+  display: none !important;
+}
+
+/* Remove parent checkbox containers from layout */
+.checkbox-grid > .custom-checkbox:nth-child(1),
+.checkbox-grid > .custom-checkbox:nth-child(2) {
+  display: none;
+}
+
     </style>
 </head>
 
@@ -332,7 +347,7 @@
                                 <input type="checkbox" class="custom-control-input" name="suppressionTypes"
                                     value="tpcctpsSuppression" id="tpcctpsSuppression">
                                 <label class="custom-control-label" for="tpcctpsSuppression">
-                                    TPCCTPS Suppression (Phone)
+                                    TPS Suppression (Phone)
                                 </label>
                             </div>
                         </div>
@@ -375,24 +390,24 @@
             </div>
 
             <script>
-                document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function () {
                     // Get the select elements - access first element of NodeList using [0]
                     const masterSelectElement = document.getElementsByName('masterClientCode')[0];
                     const qualitySelectElement = document.getElementsByName('qualityClientCode')[0];
-            
+
                     // Get the checkbox elements
                     const masterCheckboxElement = document.getElementById('masterSuppression');
                     const qualityCheckboxElement = document.getElementById('qualitySuppression');
-            
+
                     function toggleCheckbox(selectElement, checkboxElement) {
                         // Check the actual select element's value
                         checkboxElement.checked = selectElement.value !== "";
                     }
-            
+
                     // Event listeners for both dropdowns
                     masterSelectElement.addEventListener('change', () => toggleCheckbox(masterSelectElement, masterCheckboxElement));
                     qualitySelectElement.addEventListener('change', () => toggleCheckbox(qualitySelectElement, qualityCheckboxElement));
-            
+
                     // Initial check
                     toggleCheckbox(masterSelectElement, masterCheckboxElement);
                     toggleCheckbox(qualitySelectElement, qualityCheckboxElement);
@@ -712,7 +727,7 @@
                     }
                 };
             </script>
-            
+
 </body>
 
 </html>

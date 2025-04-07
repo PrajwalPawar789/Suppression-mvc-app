@@ -30,7 +30,7 @@ const normalizeDomain = (str) => {
   const normalized = str.trim().toLowerCase();
   logger.info(`normalizeDomain: ${str} => ${normalized}`);
   return normalized;
-};
+}; 
 
 // Function to check the database for a match based on domain name
 async function checkDatabase(domainName, username) {

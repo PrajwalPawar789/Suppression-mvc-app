@@ -20,6 +20,9 @@ const invalidemailController1 = require('../controllers/invalidemailController')
 const globalemailController = require('../controllers/globalemailController');
 const dncCompanyController = require('../controllers/dnc_companyController');
 const dncSuppressionController = require('../controllers/dnc_suppressionController');
+const insert_TE16_MSFT_Accept_all_domain_suppressionController = require('../controllers/insert_TE16_MSFT_Accept_all_domain_suppressionController');
+const insert_Msft_Domain_Suppression_Controller = require('../controllers/insertMsftClientDomainSuppressionController');
+const insert_TPS_Suppression_Controller = require('../controllers/insertTPSSuppressionController');
 // const qualityqualifiedController = require('../controllers/quality-qualifiedController');
 const TPCCTPSSupressionController = require('../controllers/TPCCTPSSupressionController');
 const DeadContactController = require('../controllers/DeadContactController');
@@ -96,7 +99,8 @@ router.get('/insert', (req, res, next) => {
     'Divyanshu.Thakre',
     'Rohit.Patil',
     'Anikesh.Wankhade',
-    'Saurabh.Pandey'
+    'Saurabh.Pandey',
+    'Shoaib.Mulani'
   ];
 
   if (req.session.isAuthenticated && allowedUsernames.includes(req.session.username)) {
@@ -366,6 +370,10 @@ router.post('/DeadContactController', isAuthenticated, upload.single('file'), De
 router.post('/globalemailprocess', isAuthenticated, upload.single('file'), globalemailController.insertGlobalEmailData);
 router.post('/dnccompany', isAuthenticated, upload.single('dncFile'), dncCompanyController.insertDncCompanyData);
 router.post('/dnc-suppression', isAuthenticated, upload.single('dncSuppressionFile'), dncSuppressionController.insertDncSuppressionData);
+router.post('/insert_msft_accept_all_domain_suppression', isAuthenticated, upload.single('te16MsftAcceptAllFile'), insert_TE16_MSFT_Accept_all_domain_suppressionController.insertMsftAcceptAllDomainSuppression);
+router.post('/insert_Msft_Domain_Suppression', isAuthenticated, upload.single('msftDomainSuppressionFile'), insert_Msft_Domain_Suppression_Controller.insertMsftDomainSuppression);
+router.post('/insert_Msft_Client_Suppression', isAuthenticated, upload.single('msftClientSuppressionFile'), insert_Msft_Domain_Suppression_Controller.insertMsftClientSuppression);
+router.post('/tps_phone_Suppression', isAuthenticated, upload.single('tcpPhoneFile'), insert_TPS_Suppression_Controller.insertTPSSuppression);
 
 router.post('/globalemailsuppression', isAuthenticated, upload.single('file'), globalemailsuppression.uploadFile);
 router.post('/dncsuppression', isAuthenticated, upload.single('file'), dncsuppression.uploadFile);

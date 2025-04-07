@@ -117,7 +117,7 @@ const getQQLeadDataForDay = async (req, res) => {
   const query = `
     SELECT *
     FROM public.quality_qualified
-    WHERE date_::DATE = CURRENT_DATE - INTERVAL '${diffDays} days';
+    WHERE audit_date::DATE = CURRENT_DATE - INTERVAL '${diffDays} days';
   `;
 
   console.log("Given query for downloading the data", query);
@@ -141,7 +141,7 @@ const getQQReportData = async (req, res) => {
 
   const query = `
     SELECT  
-      date_, 
+      audit_date as date_, 
       client, 
       qa_name, 
       campaign_id, 
@@ -150,16 +150,16 @@ const getQQReportData = async (req, res) => {
     FROM 
       public.quality_qualified
     WHERE
-      TO_DATE(date_, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '${diffDays} days'
+      TO_DATE(audit_date, 'DD-Mon-YY') = CURRENT_DATE - INTERVAL '${diffDays} days'
     GROUP BY 
-      date_, 
+      audit_date, 
       client, 
       qa_name, 
       campaign_id, 
       end_client_name
     
     ORDER BY 
-      date_ ASC, 
+      audit_date ASC, 
       client ASC, 
       qa_name ASC, 
       campaign_id ASC, 

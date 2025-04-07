@@ -455,7 +455,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 mt-8">
               <div className="bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 transform transition  duration-300">
                 <h2 className="text-xl font-semibold text-white mb-4">
-                  Leads Suppressed Client Wise Delivery
+                  Leads Suppressed SPoC Wise
                 </h2>
                 <ClientWiseChart data={spocWise} />
               </div>
@@ -468,7 +468,7 @@ const Dashboard = () => {
               >
                 <div className="w-full flex flex-col items-center justify-center bg-gray-800 shadow-lg rounded-lg p-6 md:p-8 transform transition  duration-300">
                   <h2 className="text-xl font-semibold text-white mb-4">
-                    Leads Suppressed SPoC Wise
+                    Leads Suppressed Client Wise
                   </h2>
                   <SpocWiseChart data={clientWise} />
                 </div>
