@@ -745,6 +745,7 @@ async function processFileDynamicQueryMSFT(username, filePath, dateFilter) {
 async function processSingleEntry(req, res) {
   const { firstname, lastname, companyname, phonenumber, linkedinlink, emailid, dateFilter } = req.body;
 
+  console.log("From file controller test: ", firstname, lastname, companyname, phonenumber, linkedinlink, emailid, dateFilter);
   // Validate input
   if (!firstname || !lastname || !companyname || !phonenumber || !linkedinlink || !emailid || !dateFilter) {
     return res.status(400).json({ error: 'All fields are required.' });
@@ -795,7 +796,7 @@ async function processSingleEntry(req, res) {
                   ELSE 'Unmatch'
               END AS end_client_name_status
           FROM
-              public.quality_qualified c
+              public.campaigns c
           JOIN
               data d ON c.client = d.client_code
           WHERE
@@ -839,6 +840,7 @@ async function processSingleEntry(req, res) {
 
     // Return the result
     if (dbResult.rows.length > 0) {
+      console.log("Looging dbResult ", dbResult.rows[0]);
       return res.json(dbResult.rows[0]);
     } else {
       return res.json({ message: 'No matching records found.' });

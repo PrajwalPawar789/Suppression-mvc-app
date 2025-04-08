@@ -21,7 +21,7 @@ const uploadsDir = path.join(__dirname, '../uploads');
 function formatDate(inputDate) {
     const date = new Date(inputDate);
     const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleString('default', { month: 'short' });
+    const month = date.toLocaleString('en-US', { month: 'short' });
     const year = date.getFullYear().toString().slice(-2);
     return `${day}-${month}-${year}`;
 }
@@ -191,6 +191,7 @@ async function processAllSuppression(req, res) {
                 if (masterClientCode === 'All') {
                     suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
                 } else if (masterClientCode === 'MSFT') {
+                    console.log("Logging rowData", rowData)
                     const mockReq = {
                         body: {
                             ...rowData,
@@ -200,6 +201,8 @@ async function processAllSuppression(req, res) {
                         }
                     };
                     suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
+                    console.log("Logging Result from All supp check ", suppressionResult);
+
                 } else {
                     suppressionResult = await masterCheckDatabaseAPI({
                         body: {
@@ -213,14 +216,24 @@ async function processAllSuppression(req, res) {
                     }, mockRes);
                 }
 
-                masterResult = {
-                    'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
-                    'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
-                    'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
-                    'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
-                    'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
-                    'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
-                };
+                // masterResult = {
+                //     'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
+                //     'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+                //     'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+                //     'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
+                //     'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+                //     'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
+                // };
+
+                // Change from camelCase to snake_case property access
+masterResult = {
+    'Master Match Status': `Master: ${suppressionResult.match_status || 'Unmatch'}`, // was .matchStatus
+    'Master Client Code Status': `Master: ${suppressionResult.client_code_status || 'Unmatch'}`, // was .clientCodeStatus
+    'Master Date Status': `Master: ${suppressionResult.date_status || 'Fresh Lead GTG'}`, // was .dateStatus
+    'Master Email Status': `Master: ${suppressionResult.email_status || 'Unmatch'}`, // was .emailStatus
+    'Master LinkedIn Status': `Master: ${suppressionResult.linkedin_link_status || 'Unmatch'}`, // was .linkedinLinkStatus
+    'Master End Client Status': `Master: ${suppressionResult.end_client_name_status || 'Unmatch'}` // was .end_client_nameStatus
+  };
             }
 
             // Process Quality Suppression
@@ -253,14 +266,27 @@ async function processAllSuppression(req, res) {
                 }
 
 
-                qualityResult = {
-                    'Quality Match Status': `Quality: ${suppressionResult.matchStatus || 'Unmatch'}`,
-                    'Quality Client Code Status': `Quality: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
-                    'Quality Date Status': `Quality: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
-                    'Quality Email Status': `Quality: ${suppressionResult.emailStatus || 'Unmatch'}`,
-                    'Quality LinkedIn Status': `Quality: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
-                    'Quality End Client Status': `Quality: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
-                };
+                // qualityResult = {
+                //     'Quality Match Status': `Quality: ${suppressionResult.matchStatus || 'Unmatch'}`,
+                //     'Quality Client Code Status': `Quality: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+                //     'Quality Date Status': `Quality: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+                //     'Quality Email Status': `Quality: ${suppressionResult.emailStatus || 'Unmatch'}`,
+                //     'Quality LinkedIn Status': `Quality: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+                    // 'Quality End Client Status': `Quality: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
+                // };
+
+                // Apply the same fix in the Quality section
+qualityResult = {
+    'Quality Match Status': `Quality: ${suppressionResult.match_status || 'Unmatch'}`,
+    'Quality Client Code Status': `Quality: ${suppressionResult.client_code_status || 'Unmatch'}`,
+    'Quality Date Status': `Quality: ${suppressionResult.date_status || 'Fresh Lead GTG'}`,
+    'Quality Email Status': `Quality: ${suppressionResult.email_status || 'Unmatch'}`,
+    'Quality LinkedIn Status': `Quality: ${suppressionResult.linkedin_link_status || 'Unmatch'}`,
+    'Quality End Client Status': `Quality: ${suppressionResult.end_client_name_status || 'Unmatch'}`
+  };
+
+  console.log("Suppression Result Raw:", suppressionResult);
+
             }
 
             // Process Global Email Suppression
