@@ -29,12 +29,11 @@ function formatDate(inputDate) {
 // In AllsuppressionController.js - Update the updateSummary function
 function updateSummary(type, result, summary) {
     let statusTypes = [];
-    
+
     if (type === 'DNC') {
         statusTypes = [
             'Email Status',
-            'Company Status', 
-            'Domain Status',
+            'Full Name and Domain Status',
             'DNC Company Status',
             'DNC Domain Status'
         ];
@@ -46,10 +45,10 @@ function updateSummary(type, result, summary) {
         statusTypes = ['Client Status', 'Domain Status'];
     } else {
         statusTypes = [
-            'Match Status', 
-            'Client Code Status', 
-            'Date Status', 
-            'Email Status', 
+            'Match Status',
+            'Client Code Status',
+            'Date Status',
+            'Email Status',
             'End Client Status'
         ];
     }
@@ -57,12 +56,12 @@ function updateSummary(type, result, summary) {
     statusTypes.forEach(statusType => {
         const fullStatusKey = `${type} ${statusType}`;
         const statusValue = result[fullStatusKey];
-        
+
         if (statusValue) {
             if (!summary.statusCounts[fullStatusKey]) {
                 summary.statusCounts[fullStatusKey] = {};
             }
-            summary.statusCounts[fullStatusKey][statusValue] = 
+            summary.statusCounts[fullStatusKey][statusValue] =
                 (summary.statusCounts[fullStatusKey][statusValue] || 0) + 1;
         }
     });
@@ -107,7 +106,7 @@ async function processAllSuppression(req, res) {
         const isMsftSuppression = suppressionTypes.includes('msftSuppression');
 
         // Validate suppression types
-        if (!isMaster && !isQuality && !isGlobal && !isInvalid && 
+        if (!isMaster && !isQuality && !isGlobal && !isInvalid &&
             !isTPCCTPSSupression && !isDNC && !isTE16MsftDomain && !isMsftSuppression) {
             return res.status(400).json({ success: false, error: 'Invalid suppression type' });
         }
@@ -119,11 +118,10 @@ async function processAllSuppression(req, res) {
         if (!leadDate) {
             return res.status(400).json({ success: false, error: 'Lead date is required' });
         }
-        
+
         const formattedDate = formatDate(leadDate);
         const qualityformattedDate = formatDate(qualityleadDate); // Add day part for parsing
 
-        console.log(`Formatted date: ${formattedDate}`);
 
         // Validate client codes
         const masterClientCode = isMaster ? req.body.masterClientCode : null;
@@ -147,7 +145,7 @@ async function processAllSuppression(req, res) {
 
         for (const row of data) {
             leadIndex++;  // Increment first to start counting from 1
-        
+
             const rowData = {
                 firstname: row['First Name'],
                 lastname: row['Last Name'],
@@ -158,9 +156,8 @@ async function processAllSuppression(req, res) {
                 domain: row['Domain'], // Add this line to capture domain from Excel
                 dateFilter: formattedDate
             };
-        
-            console.log("Row Data All: ", rowData);
-        
+
+
             let masterResult = {};
             let qualityResult = {};
             let globalResult = {}; // Add global result
@@ -169,7 +166,7 @@ async function processAllSuppression(req, res) {
             let dncResult = {};
             let te16MsftResult = {};
             let msftResult = {};
-        
+
             const mockRes = {
                 status: (code) => mockRes,
                 json: (data) => data,
@@ -177,52 +174,54 @@ async function processAllSuppression(req, res) {
             };
 
             // Process Master Suppression
-    if (isMaster) {
-        let suppressionResult;
+            if (isMaster) {
+                let suppressionResult;
 
-        // Generate combined left3 and left4 values from first 3 letters of firstname, lastname, companyname
-        const left3Combined = 
-            (rowData.firstname?.substring(0, 3) || '') +
-            (rowData.lastname?.substring(0, 3) || '') +
-            (rowData.companyname?.substring(0, 3) || '');
-        const left4Combined = left3Combined; // As per user instruction, left4 uses the same combination
+                // Generate combined left3 and left4 values from first 3 letters of firstname, lastname, companyname
+                const left3Combined =
+                    (rowData.firstname?.substring(0, 3) || '') +
+                    (rowData.lastname?.substring(0, 3) || '') +
+                    (rowData.companyname?.substring(0, 3) || '');
 
-        logger.info(`${username} checked Master suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, left3=${left3Combined}, left4=${left4Combined}, linkedinLink=${rowData.linkedinlink}`);
 
-        if (masterClientCode === 'All') {
-            suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
-        } else if (masterClientCode === 'MSFT') {
-            const mockReq = {
-                body: {
-                    ...rowData,
-                    email: rowData.emailid,
-                    end_client_name: rowData.companyname,
-                    dateFilter: formattedDate
+                const left4Combined = left3Combined; // As per user instruction, left4 uses the same combination
+
+                logger.info(`${username} checked Master suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, left3=${left3Combined}, left4=${left4Combined}, linkedinLink=${rowData.linkedinlink}`);
+
+                if (masterClientCode === 'All') {
+                    suppressionResult = await processSingleAllClient({ ...rowData, dateFilter: formattedDate });
+                } else if (masterClientCode === 'MSFT') {
+                    const mockReq = {
+                        body: {
+                            ...rowData,
+                            email: rowData.emailid,
+                            end_client_name: rowData.companyname,
+                            dateFilter: formattedDate
+                        }
+                    };
+                    suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
+                } else {
+                    suppressionResult = await masterCheckDatabaseAPI({
+                        body: {
+                            left3: left3Combined, // Use combined value
+                            left4: left4Combined, // Use combined value
+                            email: rowData.emailid,
+                            clientCode: masterClientCode,
+                            dateFilter: formattedDate,
+                            end_client_name: rowData.companyname
+                        }
+                    }, mockRes);
                 }
-            };
-            suppressionResult = await masterProcessSingleEntry(mockReq, mockRes);
-        } else {
-            suppressionResult = await masterCheckDatabaseAPI({
-                body: {
-                    left3: left3Combined, // Use combined value
-                    left4: left4Combined, // Use combined value
-                    email: rowData.emailid,
-                    clientCode: masterClientCode,
-                    dateFilter: formattedDate,
-                    end_client_name: rowData.companyname
-                }
-            }, mockRes);
-        }
 
-        masterResult = {
-            'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
-            'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
-            'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
-            'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
-            'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
-            'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
-        };
-    }
+                masterResult = {
+                    'Master Match Status': `Master: ${suppressionResult.matchStatus || 'Unmatch'}`,
+                    'Master Client Code Status': `Master: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
+                    'Master Date Status': `Master: ${suppressionResult.dateStatus || 'Fresh Lead GTG'}`,
+                    'Master Email Status': `Master: ${suppressionResult.emailStatus || 'Unmatch'}`,
+                    'Master LinkedIn Status': `Master: ${suppressionResult.linkedinLinkStatus || 'Unmatch'}`,
+                    'Master End Client Status': `Master: ${suppressionResult.end_client_nameStatus || 'Unmatch'}`
+                };
+            }
 
             // Process Quality Suppression
             if (isQuality) {
@@ -231,7 +230,7 @@ async function processAllSuppression(req, res) {
                 logger.info(`${username} checked Quality suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, clientCode=${qualityClientCode}, endClient=${rowData.companyname}`);
 
                 console.log(`Using date for query: ${qualityformattedDate}`);
-                
+
                 if (qualityClientCode === 'MSFT') {
                     const mockReq = {
                         body: {
@@ -253,8 +252,7 @@ async function processAllSuppression(req, res) {
                     }, mockRes);
                 }
 
-                console.log('Row Response from Query: ', suppressionResult);
-                
+
                 qualityResult = {
                     'Quality Match Status': `Quality: ${suppressionResult.matchStatus || 'Unmatch'}`,
                     'Quality Client Code Status': `Quality: ${suppressionResult.clientCodeStatus || 'Unmatch'}`,
@@ -324,20 +322,22 @@ async function processAllSuppression(req, res) {
 
             if (isDNC) {
 
-                logger.info(`${username} checked DNC suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, company=${rowData.companyname}, domain=${rowData.domain}`);
+                const fullNameAndDomain = (rowData.firstname || '') + (rowData.lastname || '') + (rowData.domain || '');
+
+                logger.info(`${username} checked DNC suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, company=${rowData.companyname}, domain=${rowData.domain}, firstname=${rowData.firstname}, lastname=${rowData.lastname}`);
 
                 try {
                     const dncResponse = await dncCheckDatabase(
                         rowData.emailid,
                         rowData.companyname,
                         rowData.domain,
+                        fullNameAndDomain,
                         'system'
                     );
-                    
+                    logger.info(`dnc responce Check--> ${dncResponse.fullname_and_domain_status}`)
                     dncResult = {
                         'DNC Email Status': `DNC: ${dncResponse.email_status}`,
-                        'DNC Company Status': `DNC: ${dncResponse.company_status}`,
-                        'DNC Domain Status': `DNC: ${dncResponse.domain_status}`,
+                        'DNC Full Name and Domain Status': `DNC: ${dncResponse.fullname_and_domain_status}`,
                         'DNC DNC Company Status': `DNC: ${dncResponse.dnc_company_status}`,
                         'DNC DNC Domain Status': `DNC: ${dncResponse.dnc_domain_status}`
                     };
@@ -345,6 +345,7 @@ async function processAllSuppression(req, res) {
                     console.error('DNC check error:', error);
                     dncResult = {
                         'DNC Email Status': 'DNC: Error',
+                        'DNC Full Name and Domain Status':'DNC: Error',
                         'DNC Company Status': 'DNC: Error',
                         'DNC Domain Status': 'DNC: Error'
                     };
@@ -375,23 +376,23 @@ async function processAllSuppression(req, res) {
 
                 logger.info(`${username} checked MSFT suppression for lead ${leadIndex - 1}: email=${rowData.emailid}, domain=${rowData.domain}`);
 
-            try {
-                // Client check
-                const clientStatus = await msftClientCheck(rowData.emailid, 'system');
-                // Domain check
-                const domainStatus = await msftDomainCheck(rowData.domain, 'system');
-                
-                msftResult = {
-                    'MSFT Client Status': `MSFT: ${clientStatus}`,
-                    'MSFT Domain Status': `MSFT: ${domainStatus}`
-                };
-            } catch (error) {
-                console.error('MSFT check error:', error);
-                msftResult = {
-                    'MSFT Client Status': 'MSFT: Error',
-                    'MSFT Domain Status': 'MSFT: Error'
-                };
-            }
+                try {
+                    // Client check
+                    const clientStatus = await msftClientCheck(rowData.emailid, 'system');
+                    // Domain check
+                    const domainStatus = await msftDomainCheck(rowData.domain, 'system');
+
+                    msftResult = {
+                        'MSFT Client Status': `MSFT: ${clientStatus}`,
+                        'MSFT Domain Status': `MSFT: ${domainStatus}`
+                    };
+                } catch (error) {
+                    console.error('MSFT check error:', error);
+                    msftResult = {
+                        'MSFT Client Status': 'MSFT: Error',
+                        'MSFT Domain Status': 'MSFT: Error'
+                    };
+                }
             }
 
             // Combine results
@@ -404,70 +405,69 @@ async function processAllSuppression(req, res) {
                 ...isTPCCTPSResult,
                 ...dncResult,
                 ...te16MsftResult,
-                ...msftResult 
+                ...msftResult
             };
 
             // Calculate Final Status based on selected suppressions
-let finalStatus = '';
+            let finalStatus = '';
 
-// Master Suppression: Match if Master Date Status is "Still Suppressed"
-if (isMaster && combinedResult['Master Date Status'] === 'Master: Still Suppressed') {
+            // Master Suppression: Match if Master Date Status is "Still Suppressed"
+            if (isMaster && combinedResult['Master Date Status'] === 'Master: Still Suppressed') {
 
-    finalStatus = finalStatus + 'Master Match | ';
-}
+                finalStatus = finalStatus + 'Master Match | ';
+            }
 
-// Quality Suppression: Match if Quality Date Status is "Still Suppressed"
-if (isQuality && combinedResult['Quality Date Status'] === 'Quality: Still Suppressed') {
-    finalStatus = finalStatus + 'QQ Match | ';
-}
+            // Quality Suppression: Match if Quality Date Status is "Still Suppressed"
+            if (isQuality && combinedResult['Quality Date Status'] === 'Quality: Still Suppressed') {
+                finalStatus = finalStatus + 'QQ Match | ';
+            }
 
-// Global Email: Direct match check
-if (isGlobal && combinedResult['Global Email Status'] === 'Global: Match') {
-    finalStatus = finalStatus + 'Global Email Match | ';
-}
+            // Global Email: Direct match check
+            if (isGlobal && combinedResult['Global Email Status'] === 'Global: Match') {
+                finalStatus = finalStatus + 'Global Email Match | ';
+            }
 
-// Invalid Email: Direct match check
-if (isInvalid && combinedResult['Invalid Email Status'] === 'Invalid: Match') {
-    finalStatus = finalStatus + 'Invalid Email Match | ';
-}
+            // Invalid Email: Direct match check
+            if (isInvalid && combinedResult['Invalid Email Status'] === 'Invalid: Match') {
+                finalStatus = finalStatus + 'Invalid Email Match | ';
+            }
 
-// TPCCTPS: Direct match check
-if (isTPCCTPSSupression && combinedResult['TPCCTPS Status'] === 'TPCCTPS Status: Match') {
-    finalStatus = finalStatus + 'TPCCTPS Match | ';
-}
+            // TPCCTPS: Direct match check
+            if (isTPCCTPSSupression && combinedResult['TPCCTPS Status'] === 'TPCCTPS Status: Match') {
+                finalStatus = finalStatus + 'TPCCTPS Match | ';
+            }
 
-// DNC: Check if any DNC column is "Match"
-if (isDNC) {
-    const dncColumns = [
-        'DNC Email Status',
-        'DNC Company Status',
-        'DNC Domain Status',
-        'DNC DNC Company Status',
-        'DNC DNC Domain Status'
-    ];
-    if (dncColumns.some(col => combinedResult[col] === 'DNC: Match')) {
-        finalStatus = finalStatus + 'DNC Match | ';
-    }
-}
+            // DNC: Check if any DNC column is "Match"
+            if (isDNC) {
+                const dncColumns = [
+                    'DNC Email Status',
+                    'DNC DNC Full Name and Domain Status',
+                    'DNC DNC Company Status',
+                    'DNC DNC Domain Status'
+                ];
+                if (dncColumns.some(col => combinedResult[col] === 'DNC: Match')) {
+                    finalStatus = finalStatus + 'DNC Match | ';
+                }
+            }
 
-// TE16Msft Domain: Direct match check
-if (isTE16MsftDomain && combinedResult['TE16Msft Domain Status'] === 'TE16Msft: Match') {
-    ffinalStatus = finalStatus +'TE16Msft Accept All Domain Match | ';
-}
+            // TE16Msft Domain: Direct match check
+            if (isTE16MsftDomain && combinedResult['TE16Msft Domain Status'] === 'TE16Msft: Match') {
+                ffinalStatus = finalStatus + 'TE16Msft Accept All Domain Match | ';
+            }
 
-// MSFT: Check Client or Domain match
-if (isMsftSuppression) {
-    if (combinedResult['MSFT Client Status'] === 'MSFT: Match' || combinedResult['MSFT Domain Status'] === 'MSFT: Match') {
-        finalStatus = finalStatus + 'MSFT Client or Domain Match | ';
-    }
-}
+            // MSFT: Check Client or Domain match
+            if (isMsftSuppression) {
+                if (combinedResult['MSFT Client Status'] === 'MSFT: Match' || combinedResult['MSFT Domain Status'] === 'MSFT: Match') {
+                    finalStatus = finalStatus + 'MSFT Client or Domain Match | ';
+                }
+            }
 
-if(finalStatus === '') {
-    finalStatus = "Unmatch";
-}
+            if (finalStatus === '') {
+                finalStatus = "Unmatch";
+            }
 
-// Add Final Status to the result
-combinedResult['Final Status'] = finalStatus;
+            // Add Final Status to the result
+            combinedResult['Final Status'] = finalStatus;
 
             results.push(combinedResult);
             summary.totalRecords++;
@@ -475,7 +475,7 @@ combinedResult['Final Status'] = finalStatus;
             // Update summary counts
             if (isMaster) updateSummary('Master', masterResult, summary);
             if (isQuality) updateSummary('Quality', qualityResult, summary);
-            if (isGlobal) updateSummary('Global', globalResult, summary); 
+            if (isGlobal) updateSummary('Global', globalResult, summary);
             if (isInvalid) updateSummary('Invalid', invalidResult, summary);
             if (isTPCCTPSSupression) updateSummary('TPCCTPS', isTPCCTPSResult, summary);
             if (isDNC) updateSummary('DNC', dncResult, summary);
@@ -490,8 +490,6 @@ combinedResult['Final Status'] = finalStatus;
         XLSX.utils.book_append_sheet(resultWorkbook, XLSX.utils.json_to_sheet(results), 'Results');
         const outputFilename = `suppression_results_${Date.now()}.xlsx`;
         XLSX.writeFile(resultWorkbook, path.join(uploadsDir, outputFilename));
-
-        console.log('Summary Report:', summary);
 
         res.json({
             success: true,

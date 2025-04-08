@@ -23,7 +23,7 @@ const dncSuppressionController = require('../controllers/dnc_suppressionControll
 const insert_TE16_MSFT_Accept_all_domain_suppressionController = require('../controllers/insert_TE16_MSFT_Accept_all_domain_suppressionController');
 const insert_Msft_Domain_Suppression_Controller = require('../controllers/insertMsftClientDomainSuppressionController');
 const insert_TPS_Suppression_Controller = require('../controllers/insertTPSSuppressionController');
-// const qualityqualifiedController = require('../controllers/quality-qualifiedController');
+const qualityqualifiedController = require('../controllers/quality-qualifiedController');
 const TPCCTPSSupressionController = require('../controllers/TPCCTPSSupressionController');
 const DeadContactController = require('../controllers/DeadContactController');
 const TE16_MSFT_Accept_all_domain_suppression = require('../controllers/TE16_MSFT_Accept_all_domain_suppression');
@@ -351,7 +351,7 @@ router.post('/master-suppression', fileController.checkDatabaseAPI);
 
 router.post('/insert', isAuthenticated, suppressionDataController.insertSuppressionData);
 router.post('/upload', isAuthenticated, fileController.upload.single('excelFile'), fileController.uploadFile);
-// router.post('/quality-qualified', isAuthenticated, qualityqualifiedController.upload.single('excelFile'), qualityqualifiedController.uploadFile);
+router.post('/quality-qualified', isAuthenticated, qualityqualifiedController.upload.single('excelFile'), qualityqualifiedController.uploadFile);
 
 router.post('/process', isAuthenticated, fileController.upload.single('excelFile'), suppressionDataController.processExcel);
 

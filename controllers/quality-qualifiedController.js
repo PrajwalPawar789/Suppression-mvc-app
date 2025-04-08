@@ -5,11 +5,19 @@ const ExcelJS = require("exceljs");
 const logger = require("./logger"); // Ensure you have a logger module
 
 // PostgreSQL connection settings
+// const pool = new Pool({
+//   user: "postgres",
+//   host: "158.220.121.203",
+//   database: "postgres",
+//   password: "P0stgr3s%098",
+//   port: 5432,
+// });
+
 const pool = new Pool({
-  user: "postgres",
-  host: "158.220.121.203",
-  database: "postgres",
-  password: "P0stgr3s%098",
+  user: "root",
+  host: "192.168.1.36",
+  database: "suppression",
+  password: "Scitilnam$007",
   port: 5432,
 });
 
@@ -504,7 +512,7 @@ async function processFileDynamicQuery(username, filePath, dateFilter) {
     `;
 
     logger.info(
-      `${username} - checking QQ All Client Code lead : email=${email},Date= ${formattedDate} ,left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+      `${username} - checking QQ All Client Code lead : email=${email},Date= ${formattedDate} ,left3=${calculatedLeft3}, left4=${calculatedLeft4}, linkedinLink=${linkedinLink}`
     );
 
     const dbResult = await pool.query(dynamicQuery, [
