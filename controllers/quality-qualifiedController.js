@@ -837,7 +837,18 @@ async function processSingleEntry(req, res) {
 
     // Return the result
     if (dbResult.rows.length > 0) {
-      return res.json(dbResult.rows[0]);
+
+      const data = {
+        dateStatus: dbResult.rows[0].date_status,
+        matchStatus: dbResult.rows[0].match_status,
+        emailStatus: dbResult.rows[0].email_status,
+        clientCodeStatus: dbResult.rows[0].client_code_status,
+        linkedinLinkStatus: dbResult.rows[0].linkedin_link_status,
+        end_client_nameStatus: dbResult.rows[0].end_client_name_status,
+      };
+      return res.json(data);
+
+      // return res.json(dbResult.rows[0]);
     } else {
       return res.json({ message: 'No matching records found.' });
     }

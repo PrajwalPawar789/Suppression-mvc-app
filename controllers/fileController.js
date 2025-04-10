@@ -76,7 +76,7 @@ async function checkDatabase(
 ) {
 
   logger.info(
-    `${username} - checking Master lead : email=${email}, left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
+    `${username} - checking Single check Master lead : email=${email}, left3=${left3}, left4=${left4}, linkedinLink=${linkedinLink}`
   );
 
   const client = await pool.connect();
@@ -185,7 +185,7 @@ LIMIT 1;
 
     const row = result.rows[0];
 
-    console.log("Row Response from Query: ", row)
+    console.log("Master Single Check result from Query: ", row)
     if (row) {
       return {
         dateStatus: row.date_status,
@@ -840,8 +840,17 @@ async function processSingleEntry(req, res) {
 
     // Return the result
     if (dbResult.rows.length > 0) {
-      console.log("Looging dbResult ", dbResult.rows[0]);
-      return res.json(dbResult.rows[0]);
+      console.log("Looging dbResult ", res.json(dbResult.rows[0]));
+
+      const data = {
+        dateStatus: dbResult.rows[0].date_status,
+        matchStatus: dbResult.rows[0].match_status,
+        emailStatus: dbResult.rows[0].email_status,
+        clientCodeStatus: dbResult.rows[0].client_code_status,
+        linkedinLinkStatus: dbResult.rows[0].linkedin_link_status,
+        end_client_nameStatus: dbResult.rows[0].end_client_name_status,
+      };
+      return res.json(data);
     } else {
       return res.json({ message: 'No matching records found.' });
     }
